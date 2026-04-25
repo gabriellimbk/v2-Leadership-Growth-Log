@@ -64,7 +64,7 @@ export const storageService = {
 
   getSubmissions: async (): Promise<Submission[]> => {
     const { data } = await supabase
-      .from('submissions')
+      .from('leadership_growth_log')
       .select('*')
       .order('updated_at', { ascending: false });
     return (data ?? []).map(rowToSubmission);
@@ -72,7 +72,7 @@ export const storageService = {
 
   getSubmissionByUid: async (uid: string): Promise<Submission | null> => {
     const { data } = await supabase
-      .from('submissions')
+      .from('leadership_growth_log')
       .select('*')
       .eq('student_uid', uid)
       .maybeSingle();
@@ -81,7 +81,7 @@ export const storageService = {
 
   saveSubmission: async (submission: Submission): Promise<Submission> => {
     const { data, error } = await supabase
-      .from('submissions')
+      .from('leadership_growth_log')
       .upsert({
         student_uid: submission.studentUid,
         student_email: submission.studentEmail,
