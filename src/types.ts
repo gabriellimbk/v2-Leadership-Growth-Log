@@ -28,7 +28,7 @@ export interface Submission {
   studentUid: string;
   studentEmail: string;
   studentName: string;
-  teacherId: 'Teacher A' | 'Teacher B';
+  teacherId: string;
   answers: {
     section1: Record<string, string>;
     section2: Record<string, string>;

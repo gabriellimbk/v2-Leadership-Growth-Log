@@ -71,9 +71,6 @@ function AppContent() {
         </div>
 
         <div className="flex items-center space-x-3">
-          <div className="text-[10px] font-bold text-slate-400 uppercase tracking-tight hidden md:block">
-            {config.title}
-          </div>
           {isAuthed && (
             <button
               onClick={handleSignOut}

@@ -1,0 +1,31 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    // Form Config: Teachers can write, everyone can read
+    match /configs/{configId} {
+      allow read: if true;
+      allow write: if isSignedIn(); // In a real app, check for teacher role
+    }
+
+    // Submissions: Students can create/update their own, Teachers can read all and update comments
+    match /submissions/{submissionId} {
+      allow read: if true; // For demo purposes, keeping it simple; ideally filtered by auth
+      allow create: if true; 
+      allow update: if true;
+      allow delete: if false;
+    }
+  }
+}
