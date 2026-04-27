@@ -8,7 +8,7 @@ import { Search, MessageSquare, Download, ChevronRight, Settings, RefreshCcw, Tr
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 
-const TEACHERS = ['Mr Ridzuan', 'Ms Shirley Lui'];
+const TEACHERS = ['Mr Ridzuan', 'Ms Veronica Chua'];
 
 interface TeacherConsoleProps {
   config: FormConfig;

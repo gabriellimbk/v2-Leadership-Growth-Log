@@ -6,7 +6,7 @@ import StudentLogin from './StudentLogin';
 import { motion } from 'motion/react';
 import { Save, RefreshCcw, MessageSquare } from 'lucide-react';
 
-const TEACHERS = ['Mr Ridzuan', 'Ms Shirley Lui'];
+const TEACHERS = ['Mr Ridzuan', 'Ms Veronica Chua'];
 
 interface StudentConsoleProps {
   config: FormConfig;

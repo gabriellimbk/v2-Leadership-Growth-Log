@@ -12,21 +12,20 @@ export default function TeacherLogin() {
 
   const handleSendOTP = async () => {
     setError('');
+    if (!email.toLowerCase().endsWith('@ri.edu.sg')) {
+      setError('Only @ri.edu.sg email addresses are permitted.');
+      return;
+    }
     setLoading(true);
     try {
       const { error } = await supabase.auth.signInWithOtp({
         email: email.toLowerCase(),
-        options: { shouldCreateUser: false },
+        options: { shouldCreateUser: true },
       });
       if (error) throw error;
       setStep('otp');
     } catch (err: any) {
-      // "shouldCreateUser: false" throws if email not found; give a clearer message
-      if (err.message?.toLowerCase().includes('signups not allowed')) {
-        setError('This email is not registered as a mentor. Contact your administrator.');
-      } else {
-        setError(err.message ?? 'Failed to send OTP. Please try again.');
-      }
+      setError(err.message ?? 'Failed to send OTP. Please try again.');
     } finally {
       setLoading(false);
     }
