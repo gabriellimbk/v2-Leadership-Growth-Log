@@ -194,9 +194,9 @@ export default function TeacherConsole({ config, onConfigUpdate }: TeacherConsol
             onChange={e => { setFilterTeacher(e.target.value); setSelectedSub(null); }}
             className="w-full bg-white/5 border border-white/10 rounded text-[10px] font-bold text-white py-2 px-3 focus:ring-1 focus:ring-[#004d33] outline-none"
           >
-            <option value="">All Teachers</option>
+            <option value="" className="text-black bg-white">All Teachers</option>
             {TEACHERS.map(t => (
-              <option key={t} value={t}>{t}</option>
+              <option key={t} value={t} className="text-black bg-white">{t}</option>
             ))}
           </select>
 
