@@ -3,6 +3,8 @@ import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   sendEmailVerification,
+  sendPasswordResetEmail,
+  updateProfile,
 } from 'firebase/auth';
 import { auth } from '../firebase';
 import { motion } from 'motion/react';
@@ -10,18 +12,33 @@ import { GraduationCap } from 'lucide-react';
 
 export default function StudentLogin() {
   const [mode, setMode] = useState<'login' | 'signup'>('login');
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [notice, setNotice] = useState('');
   const [loading, setLoading] = useState(false);
   const [signupSuccess, setSignupSuccess] = useState(false);
 
-  const isValidEmail = (e: string) => e.toLowerCase().endsWith('@student.ri.edu.sg');
+  const isValidEmail = (e: string) => {
+    const normalized = e.toLowerCase();
+    return normalized.endsWith('@student.ri.edu.sg') || normalized.endsWith('@ri.edu.sg');
+  };
+
+  const resetMessages = () => {
+    setError('');
+    setNotice('');
+  };
 
   const handleSubmit = async () => {
-    setError('');
+    resetMessages();
+    const trimmedName = name.trim();
+    if (mode === 'signup' && !trimmedName) {
+      setError('Please enter your name.');
+      return;
+    }
     if (!isValidEmail(email)) {
-      setError('Only @student.ri.edu.sg email addresses are permitted.');
+      setError('Only @student.ri.edu.sg or @ri.edu.sg email addresses are permitted.');
       return;
     }
     if (password.length < 6) {
@@ -32,6 +49,7 @@ export default function StudentLogin() {
     try {
       if (mode === 'signup') {
         const cred = await createUserWithEmailAndPassword(auth, email.toLowerCase(), password);
+        await updateProfile(cred.user, { displayName: trimmedName });
         await sendEmailVerification(cred.user);
         setSignupSuccess(true);
       } else {
@@ -44,9 +62,37 @@ export default function StudentLogin() {
         'auth/wrong-password': 'Incorrect password.',
         'auth/invalid-credential': 'Invalid email or password.',
         'auth/email-already-in-use': 'An account with this email already exists.',
+        'auth/operation-not-allowed': 'Email/password sign-in is not enabled in Firebase.',
         'auth/too-many-requests': 'Too many attempts. Please try again later.',
       };
       setError(messages[code] ?? 'An error occurred. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePasswordReset = async () => {
+    resetMessages();
+    if (!email) {
+      setError('Enter your email address first.');
+      return;
+    }
+    if (!isValidEmail(email)) {
+      setError('Only @student.ri.edu.sg or @ri.edu.sg email addresses are permitted.');
+      return;
+    }
+    setLoading(true);
+    try {
+      await sendPasswordResetEmail(auth, email.toLowerCase());
+      setNotice('If an account exists for this email, a password reset link has been sent.');
+    } catch (err: any) {
+      const code: string = err.code ?? '';
+      const messages: Record<string, string> = {
+        'auth/invalid-email': 'Enter a valid email address.',
+        'auth/operation-not-allowed': 'Email/password sign-in is not enabled in Firebase.',
+        'auth/too-many-requests': 'Too many attempts. Please try again later.',
+      };
+      setError(messages[code] ?? 'Unable to send password reset email. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -91,11 +137,24 @@ export default function StudentLogin() {
             Student <span className="text-[#004d33]">{mode === 'login' ? 'Sign In' : 'Sign Up'}</span>
           </h2>
           <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">
-            {mode === 'login' ? 'Access your leadership log' : 'Register with your RI student email'}
+            {mode === 'login' ? 'Access your leadership log' : 'Register with your RI email'}
           </p>
         </div>
 
         <div className="space-y-4">
+          {mode === 'signup' && (
+            <div className="space-y-1">
+              <label className="text-[10px] font-bold uppercase text-slate-600">Name</label>
+              <input
+                type="text"
+                value={name}
+                onChange={e => setName(e.target.value)}
+                placeholder="Your full name"
+                className="text-[11px] border border-slate-200 rounded p-2 px-3 w-full bg-slate-50 focus:bg-white focus:ring-1 focus:ring-indigo-500 transition-all outline-none"
+              />
+            </div>
+          )}
+
           <div className="space-y-1">
             <label className="text-[10px] font-bold uppercase text-slate-600">Student Email</label>
             <input
@@ -124,18 +183,35 @@ export default function StudentLogin() {
               {error}
             </p>
           )}
+          {notice && (
+            <p className="text-[10px] text-emerald-700 font-bold bg-emerald-50 border border-emerald-100 rounded p-2">
+              {notice}
+            </p>
+          )}
 
           <button
             onClick={handleSubmit}
-            disabled={loading || !email || !password}
+            disabled={loading || !email || !password || (mode === 'signup' && !name.trim())}
             className="w-full py-2.5 bg-indigo-600 text-white rounded font-bold text-[10px] uppercase tracking-widest shadow-lg shadow-indigo-100 hover:bg-indigo-700 active:scale-95 transition-all disabled:opacity-30 disabled:pointer-events-none mt-2"
           >
             {loading ? 'Please wait...' : mode === 'login' ? 'Sign In' : 'Create Account'}
           </button>
 
+          {mode === 'login' && (
+            <div className="text-center">
+              <button
+                onClick={handlePasswordReset}
+                disabled={loading || !email}
+                className="text-[10px] font-bold text-slate-400 hover:text-indigo-700 uppercase tracking-widest disabled:opacity-30 disabled:pointer-events-none"
+              >
+                Forgot password?
+              </button>
+            </div>
+          )}
+
           <div className="text-center pt-2">
             <button
-              onClick={() => { setMode(mode === 'login' ? 'signup' : 'login'); setError(''); }}
+              onClick={() => { setMode(mode === 'login' ? 'signup' : 'login'); resetMessages(); }}
               className="text-[10px] font-bold text-indigo-600 hover:text-indigo-800 uppercase tracking-widest"
             >
               {mode === 'login' ? 'New student? Sign up →' : 'Already have an account? Sign in'}

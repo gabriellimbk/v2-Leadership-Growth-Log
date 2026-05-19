@@ -45,4 +45,10 @@ export interface Submission {
   updatedAt: any;
 }
 
-export type ViewMode = 'student' | 'teacher' | 'landing';
+export interface TeacherEntry {
+  id: string;
+  name: string;
+  email: string;
+}
+
+export type ViewMode = 'student' | 'teacher' | 'admin' | 'landing';

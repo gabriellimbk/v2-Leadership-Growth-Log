@@ -1,31 +1,39 @@
 import { useState, useEffect } from 'react';
-import { FormConfig, ViewMode } from './types';
+import { FormConfig, TeacherEntry, ViewMode } from './types';
 import StudentConsole from './components/StudentConsole';
 import TeacherConsole from './components/TeacherConsole';
+import AdminConsole from './components/AdminConsole';
 import LandingPage from './components/LandingPage';
 import { storageService } from './services/storageService';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { isAdminTeacherEmail } from './auth/adminAccess';
 import { motion, AnimatePresence } from 'motion/react';
 import { LogOut } from 'lucide-react';
 
 function AppContent() {
   const [view, setView] = useState<ViewMode>('landing');
   const [config, setConfig] = useState<FormConfig | null>(null);
+  const [teachers, setTeachers] = useState<TeacherEntry[]>([]);
   const { studentUser, teacherSession, signOutStudent, signOutTeacher } = useAuth();
+  const canAccessAdmin = isAdminTeacherEmail(teacherSession?.user.email);
 
   useEffect(() => {
     storageService.getConfig().then(setConfig);
+    storageService.getTeachers().then(setTeachers).catch(err => {
+      console.error('Failed to load teachers:', err);
+      setTeachers([]);
+    });
   }, []);
 
   const handleSignOut = async () => {
     if (view === 'student') await signOutStudent();
-    if (view === 'teacher') await signOutTeacher();
+    if (view === 'teacher' || view === 'admin') await signOutTeacher();
     setView('landing');
   };
 
   const isAuthed =
     (view === 'student' && !!studentUser) ||
-    (view === 'teacher' && !!teacherSession);
+    ((view === 'teacher' || view === 'admin') && !!teacherSession);
 
   if (!config) {
     return (
@@ -64,6 +72,14 @@ function AppContent() {
             >
               TEACHER
             </button>
+            {canAccessAdmin && (
+              <button
+                onClick={() => setView('admin')}
+                className={`px-6 py-2 text-xs font-black uppercase rounded transition-all ${view === 'admin' ? 'bg-[#004d33] text-white shadow-md' : 'text-slate-500 hover:text-[#004d33]'}`}
+              >
+                ADMIN
+              </button>
+            )}
           </div>
         </div>
 
@@ -88,12 +104,17 @@ function AppContent() {
           )}
           {view === 'student' && (
             <motion.div key="student" className="h-full" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }}>
-              <StudentConsole config={config} />
+              <StudentConsole config={config} teachers={teachers} />
             </motion.div>
           )}
           {view === 'teacher' && (
             <motion.div key="teacher" className="h-full" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }}>
-              <TeacherConsole config={config} onConfigUpdate={setConfig} />
+              <TeacherConsole config={config} onConfigUpdate={setConfig} teachers={teachers} />
+            </motion.div>
+          )}
+          {view === 'admin' && (
+            <motion.div key="admin" className="h-full" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }}>
+              <AdminConsole config={config} onConfigUpdate={setConfig} teachers={teachers} onTeachersUpdate={setTeachers} />
             </motion.div>
           )}
         </AnimatePresence>

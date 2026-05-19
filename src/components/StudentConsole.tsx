@@ -1,18 +1,19 @@
 import { useState, useEffect } from 'react';
 import { storageService } from '../services/storageService';
-import { FormConfig, Submission } from '../types';
+import { notificationService } from '../services/notificationService';
+import { FormConfig, Submission, TeacherEntry } from '../types';
 import { useAuth } from '../contexts/AuthContext';
 import StudentLogin from './StudentLogin';
 import { motion } from 'motion/react';
 import { Save, RefreshCcw, MessageSquare } from 'lucide-react';
-
-const TEACHERS = ['Mr Ridzuan', 'Ms Veronica Chua'];
+import { getTeacherEmailByName } from '../config/teachers';
 
 interface StudentConsoleProps {
   config: FormConfig;
+  teachers: TeacherEntry[];
 }
 
-export default function StudentConsole({ config }: StudentConsoleProps) {
+export default function StudentConsole({ config, teachers }: StudentConsoleProps) {
   const { studentUser, studentLoading } = useAuth();
   const [submission, setSubmission] = useState<Submission | null>(null);
   const [answers, setAnswers] = useState<Submission['answers']>({
@@ -29,8 +30,10 @@ export default function StudentConsole({ config }: StudentConsoleProps) {
   const [selectedTeacher, setSelectedTeacher] = useState('');
   const [setupSaving, setSetupSaving] = useState(false);
 
-  // Derive student name from email prefix (e.g. "26ydemo100a@student.ri.edu.sg" → "26ydemo100a")
-  const studentId = studentUser?.email?.split('@')[0] ?? '';
+  const studentName =
+    studentUser?.displayName?.trim() ||
+    studentUser?.email?.split('@')[0] ||
+    '';
 
   useEffect(() => {
     if (!studentUser) return;
@@ -84,8 +87,8 @@ export default function StudentConsole({ config }: StudentConsoleProps) {
                 className="text-[11px] border border-slate-200 rounded p-2 px-3 w-full bg-slate-50 focus:bg-white focus:ring-1 focus:ring-indigo-500 transition-all outline-none"
               >
                 <option value="">— Select mentor —</option>
-                {TEACHERS.map(t => (
-                  <option key={t} value={t}>{t}</option>
+                {teachers.map(t => (
+                  <option key={t.id} value={t.name}>{t.name}</option>
                 ))}
               </select>
             </div>
@@ -101,7 +104,7 @@ export default function StudentConsole({ config }: StudentConsoleProps) {
                 const newSub: Submission = {
                   studentUid: studentUser.uid,
                   studentEmail: studentUser.email!,
-                  studentName: studentId,
+                  studentName,
                   teacherId: selectedTeacher,
                   answers: freshAnswers,
                   comments: {},
@@ -133,6 +136,14 @@ export default function StudentConsole({ config }: StudentConsoleProps) {
       const updatedSub: Submission = { ...submission, answers, status: 'submitted' };
       const saved = await storageService.saveSubmission(updatedSub);
       setSubmission(saved);
+      const teacherEmail = getTeacherEmailByName(saved.teacherId, teachers);
+      if (teacherEmail) {
+        notificationService.notifyTeacherOfStudentSubmission(saved, teacherEmail).catch(error => {
+          console.error('Failed to send teacher notification:', error);
+        });
+      } else {
+        console.warn(`No teacher email found for ${saved.teacherId}; notification skipped.`);
+      }
     } finally {
       setIsSaving(false);
     }

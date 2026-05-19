@@ -1,5 +1,8 @@
 import { supabase } from '../supabase';
-import { FormConfig, Submission } from '../types';
+import { FormConfig, Submission, TeacherEntry } from '../types';
+
+const SUBMISSIONS_TABLE = 'V2-LEADERSHIP-PROGRAMME-GROWTH-LOG';
+const TEACHERS_TABLE = 'teachers';
 
 const DEFAULT_CONFIG: FormConfig = {
   id: 'default',
@@ -64,15 +67,24 @@ export const storageService = {
 
   getSubmissions: async (): Promise<Submission[]> => {
     const { data } = await supabase
-      .from('leadership_growth_log')
+      .from(SUBMISSIONS_TABLE)
       .select('*')
+      .order('updated_at', { ascending: false });
+    return (data ?? []).map(rowToSubmission);
+  },
+
+  getSubmissionsByTeacher: async (teacherId: string): Promise<Submission[]> => {
+    const { data } = await supabase
+      .from(SUBMISSIONS_TABLE)
+      .select('*')
+      .eq('teacher_id', teacherId)
       .order('updated_at', { ascending: false });
     return (data ?? []).map(rowToSubmission);
   },
 
   getSubmissionByUid: async (uid: string): Promise<Submission | null> => {
     const { data } = await supabase
-      .from('leadership_growth_log')
+      .from(SUBMISSIONS_TABLE)
       .select('*')
       .eq('student_uid', uid)
       .maybeSingle();
@@ -81,7 +93,7 @@ export const storageService = {
 
   saveSubmission: async (submission: Submission): Promise<Submission> => {
     const { data, error } = await supabase
-      .from('leadership_growth_log')
+      .from(SUBMISSIONS_TABLE)
       .upsert({
         student_uid: submission.studentUid,
         student_email: submission.studentEmail,
@@ -100,7 +112,7 @@ export const storageService = {
 
   deleteSubmission: async (studentUid: string): Promise<void> => {
     const { error } = await supabase
-      .from('leadership_growth_log')
+      .from(SUBMISSIONS_TABLE)
       .delete()
       .eq('student_uid', studentUid);
     if (error) throw error;
@@ -108,9 +120,47 @@ export const storageService = {
 
   deleteAllByTeacher: async (teacherId: string): Promise<void> => {
     const { error } = await supabase
-      .from('leadership_growth_log')
+      .from(SUBMISSIONS_TABLE)
       .delete()
       .eq('teacher_id', teacherId);
+    if (error) throw error;
+  },
+
+  getTeachers: async (): Promise<TeacherEntry[]> => {
+    const { data, error } = await supabase
+      .from(TEACHERS_TABLE)
+      .select('id, name, email')
+      .order('name', { ascending: true });
+    if (error) throw error;
+    return (data ?? []) as TeacherEntry[];
+  },
+
+  addTeacher: async (name: string, email: string): Promise<TeacherEntry> => {
+    const { data, error } = await supabase
+      .from(TEACHERS_TABLE)
+      .insert({ name: name.trim(), email: email.trim().toLowerCase() })
+      .select('id, name, email')
+      .single();
+    if (error) throw error;
+    return data as TeacherEntry;
+  },
+
+  updateTeacher: async (id: string, name: string, email: string): Promise<TeacherEntry> => {
+    const { data, error } = await supabase
+      .from(TEACHERS_TABLE)
+      .update({ name: name.trim(), email: email.trim().toLowerCase() })
+      .eq('id', id)
+      .select('id, name, email')
+      .single();
+    if (error) throw error;
+    return data as TeacherEntry;
+  },
+
+  deleteTeacher: async (id: string): Promise<void> => {
+    const { error } = await supabase
+      .from(TEACHERS_TABLE)
+      .delete()
+      .eq('id', id);
     if (error) throw error;
   },
 };

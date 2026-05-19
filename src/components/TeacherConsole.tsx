@@ -1,23 +1,30 @@
 import { useState, useEffect } from 'react';
 import { storageService } from '../services/storageService';
-import { FormConfig, Submission } from '../types';
+import { notificationService } from '../services/notificationService';
+import { FormConfig, Submission, TeacherEntry } from '../types';
 import { useAuth } from '../contexts/AuthContext';
 import TeacherLogin from './TeacherLogin';
 import { motion, AnimatePresence } from 'motion/react';
-import { Search, MessageSquare, Download, ChevronRight, Settings, RefreshCcw, Trash2, AlertTriangle } from 'lucide-react';
+import { Search, MessageSquare, Download, ChevronRight, Settings, RefreshCcw, Trash2, AlertTriangle, MoveRight } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
-
-const TEACHERS = ['Mr Ridzuan', 'Ms Veronica Chua'];
+import { getTeacherNameForEmail } from '../config/teachers';
 
 interface TeacherConsoleProps {
   config: FormConfig;
   onConfigUpdate: (config: FormConfig) => void;
+  teachers: TeacherEntry[];
+  mode?: 'teacher' | 'admin';
 }
 
 type ConfirmAction =
   | { type: 'delete-one'; submission: Submission }
   | { type: 'delete-all'; teacher: string };
+
+type MoveAction = {
+  submission: Submission;
+  targetTeacher: string;
+};
 
 function ConfirmDialog({ action, onConfirm, onCancel }: {
   action: ConfirmAction;
@@ -64,7 +71,66 @@ function ConfirmDialog({ action, onConfirm, onCancel }: {
   );
 }
 
-export default function TeacherConsole({ config, onConfigUpdate }: TeacherConsoleProps) {
+function MoveDialog({ action, teachers, onChangeTeacher, onConfirm, onCancel }: {
+  action: MoveAction;
+  teachers: TeacherEntry[];
+  onChangeTeacher: (teacher: string) => void;
+  onConfirm: () => void;
+  onCancel: () => void;
+}) {
+  const availableTeachers = teachers
+    .map(t => t.name)
+    .filter(name => name !== action.submission.teacherId);
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="bg-white rounded-lg shadow-2xl p-6 max-w-sm w-full mx-4 border border-slate-200"
+      >
+        <div className="flex items-start gap-3 mb-5">
+          <div className="w-9 h-9 rounded-full bg-emerald-50 flex items-center justify-center shrink-0">
+            <MoveRight size={16} className="text-[#004d33]" />
+          </div>
+          <div className="min-w-0">
+            <h3 className="text-sm font-black uppercase text-slate-800 mb-1">Move Student</h3>
+            <p className="text-[11px] text-slate-500 leading-relaxed">
+              Move {action.submission.studentName} from {action.submission.teacherId} to another teacher.
+            </p>
+          </div>
+        </div>
+        <select
+          value={action.targetTeacher}
+          onChange={e => onChangeTeacher(e.target.value)}
+          className="w-full border border-slate-200 rounded p-2 px-3 text-[11px] font-bold text-slate-700 bg-slate-50 focus:bg-white focus:ring-1 focus:ring-[#004d33] outline-none"
+        >
+          <option value="">Select teacher</option>
+          {availableTeachers.map(teacher => (
+            <option key={teacher} value={teacher}>{teacher}</option>
+          ))}
+        </select>
+        <div className="flex gap-2 justify-end mt-5">
+          <button
+            onClick={onCancel}
+            className="px-4 py-2 text-[10px] font-bold uppercase text-slate-500 hover:bg-slate-100 rounded transition-all"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={onConfirm}
+            disabled={!action.targetTeacher}
+            className="px-5 py-2 text-[10px] font-bold uppercase bg-[#004d33] text-white rounded hover:bg-[#003d29] transition-all shadow-sm disabled:opacity-30 disabled:pointer-events-none"
+          >
+            Move
+          </button>
+        </div>
+      </motion.div>
+    </div>
+  );
+}
+
+export default function TeacherConsole({ config, onConfigUpdate, teachers, mode = 'teacher' }: TeacherConsoleProps) {
   const { teacherSession, teacherLoading } = useAuth();
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [selectedSub, setSelectedSub] = useState<Submission | null>(null);
@@ -75,15 +141,22 @@ export default function TeacherConsole({ config, onConfigUpdate }: TeacherConsol
   const [isSaving, setIsSaving] = useState(false);
   const [dataLoading, setDataLoading] = useState(false);
   const [confirmAction, setConfirmAction] = useState<ConfirmAction | null>(null);
+  const [moveAction, setMoveAction] = useState<MoveAction | null>(null);
 
   useEffect(() => {
     if (!teacherSession) return;
+    const assignedTeacher = getTeacherNameForEmail(teacherSession.user.email, teachers);
     setDataLoading(true);
-    storageService.getSubmissions().then(data => {
+    const submissionsRequest = mode === 'admin'
+      ? storageService.getSubmissions()
+      : assignedTeacher
+        ? storageService.getSubmissionsByTeacher(assignedTeacher)
+        : Promise.resolve([]);
+    submissionsRequest.then(data => {
       setSubmissions(data);
       setDataLoading(false);
     });
-  }, [teacherSession]);
+  }, [mode, teacherSession, teachers]);
 
   const handleUpdateComments = async () => {
     if (!selectedSub) return;
@@ -93,6 +166,9 @@ export default function TeacherConsole({ config, onConfigUpdate }: TeacherConsol
       const saved = await storageService.saveSubmission(updatedSub);
       setSubmissions(prev => prev.map(s => s.studentUid === saved.studentUid ? saved : s));
       setSelectedSub(saved);
+      notificationService.notifyStudentOfTeacherReview(saved).catch(error => {
+        console.error('Failed to send student notification:', error);
+      });
     } finally {
       setIsSaving(false);
     }
@@ -121,6 +197,23 @@ export default function TeacherConsole({ config, onConfigUpdate }: TeacherConsol
     setSubmissions(prev => prev.filter(s => s.teacherId !== teacher));
     if (selectedSub?.teacherId === teacher) setSelectedSub(null);
     setConfirmAction(null);
+  };
+
+  const handleMoveStudent = async () => {
+    if (!moveAction?.targetTeacher) return;
+    setIsSaving(true);
+    try {
+      const updatedSub: Submission = {
+        ...moveAction.submission,
+        teacherId: moveAction.targetTeacher,
+      };
+      const saved = await storageService.saveSubmission(updatedSub);
+      setSubmissions(prev => prev.map(s => s.studentUid === saved.studentUid ? saved : s));
+      if (selectedSub?.studentUid === saved.studentUid) setSelectedSub(saved);
+      setMoveAction(null);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const exportToPDF = async () => {
@@ -152,12 +245,16 @@ export default function TeacherConsole({ config, onConfigUpdate }: TeacherConsol
     return <TeacherLogin />;
   }
 
+  const isAdminMode = mode === 'admin';
+  const assignedTeacherName = getTeacherNameForEmail(teacherSession.user.email, teachers);
+
   const filteredSubmissions = submissions.filter(s => {
-    const matchesTeacher = !filterTeacher || s.teacherId === filterTeacher;
+    const matchesOwnTeacher = isAdminMode || s.teacherId === assignedTeacherName;
+    const matchesTeacher = isAdminMode ? (!filterTeacher || s.teacherId === filterTeacher) : true;
     const matchesSearch =
       s.studentName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       s.studentEmail.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesTeacher && matchesSearch;
+    return matchesOwnTeacher && matchesTeacher && matchesSearch;
   });
 
   return (
@@ -172,6 +269,15 @@ export default function TeacherConsole({ config, onConfigUpdate }: TeacherConsol
           onCancel={() => setConfirmAction(null)}
         />
       )}
+      {moveAction && (
+        <MoveDialog
+          action={moveAction}
+          teachers={teachers}
+          onChangeTeacher={targetTeacher => setMoveAction({ ...moveAction, targetTeacher })}
+          onConfirm={handleMoveStudent}
+          onCancel={() => setMoveAction(null)}
+        />
+      )}
 
       <div className="h-full flex overflow-hidden bg-slate-100">
         {/* Sidebar */}
@@ -179,7 +285,9 @@ export default function TeacherConsole({ config, onConfigUpdate }: TeacherConsol
 
           {/* Header row: title + settings gear */}
           <div className="flex justify-between items-center px-1">
-            <label className="text-[9px] font-black text-slate-500 uppercase tracking-[0.2em]">Growth Log Queue</label>
+            <label className="text-[9px] font-black text-slate-500 uppercase tracking-[0.2em]">
+              {isAdminMode ? 'Admin Growth Log Queue' : 'Growth Log Queue'}
+            </label>
             <button
               onClick={() => { setEditableConfig(config); setIsEditingConfig(!isEditingConfig); }}
               className={`p-1.5 rounded transition-all ${isEditingConfig ? 'bg-[#004d33] text-white shadow-lg' : 'hover:bg-white/5 text-slate-500'}`}
@@ -188,17 +296,31 @@ export default function TeacherConsole({ config, onConfigUpdate }: TeacherConsol
             </button>
           </div>
 
-          {/* Teacher filter dropdown */}
-          <select
-            value={filterTeacher}
-            onChange={e => { setFilterTeacher(e.target.value); setSelectedSub(null); }}
-            className="w-full bg-white/5 border border-white/10 rounded text-[10px] font-bold text-white py-2 px-3 focus:ring-1 focus:ring-[#004d33] outline-none"
-          >
-            <option value="" className="text-black bg-white">All Teachers</option>
-            {TEACHERS.map(t => (
-              <option key={t} value={t} className="text-black bg-white">{t}</option>
-            ))}
-          </select>
+          {isAdminMode ? (
+            <select
+              value={filterTeacher}
+              onChange={e => { setFilterTeacher(e.target.value); setSelectedSub(null); }}
+              className="w-full bg-white/5 border border-white/10 rounded text-[10px] font-bold text-white py-2 px-3 focus:ring-1 focus:ring-[#004d33] outline-none"
+            >
+              <option value="" className="text-black bg-white">All Teachers</option>
+              {teachers.map(t => (
+                <option key={t.id} value={t.name} className="text-black bg-white">{t.name}</option>
+              ))}
+            </select>
+          ) : (
+            <div className="w-full bg-white/5 border border-white/10 rounded py-2 px-3">
+              <p className="text-[8px] text-slate-500 font-black uppercase tracking-widest">Assigned Teacher</p>
+              <p className="text-[10px] text-white font-bold mt-0.5 truncate">
+                {assignedTeacherName ?? 'Not configured'}
+              </p>
+            </div>
+          )}
+
+          {!isAdminMode && !assignedTeacherName && (
+            <div className="rounded border border-amber-900/40 bg-amber-900/20 p-3 text-[9px] text-amber-200 font-bold uppercase leading-relaxed">
+              Your teacher email is not mapped to a teacher name yet.
+            </div>
+          )}
 
           {/* Search */}
           <div className="relative flex-none">
@@ -213,7 +335,7 @@ export default function TeacherConsole({ config, onConfigUpdate }: TeacherConsol
           </div>
 
           {/* Delete All button — only shown when a teacher is selected */}
-          {filterTeacher && (
+          {isAdminMode && filterTeacher && (
             <button
               onClick={() => setConfirmAction({ type: 'delete-all', teacher: filterTeacher })}
               className="w-full flex items-center justify-center gap-1.5 py-1.5 rounded border border-red-900/40 bg-red-900/20 text-red-400 text-[9px] font-black uppercase tracking-widest hover:bg-red-900/40 transition-all"
@@ -253,6 +375,19 @@ export default function TeacherConsole({ config, onConfigUpdate }: TeacherConsol
                   </div>
                   <ChevronRight size={10} className={`shrink-0 mx-1 transition-transform ${selectedSub?.studentUid === s.studentUid ? 'translate-x-0.5 text-[#004d33]' : 'opacity-20'}`} />
                 </button>
+
+                {isAdminMode && (
+                  <button
+                    onClick={e => {
+                      e.stopPropagation();
+                      setMoveAction({ submission: s, targetTeacher: '' });
+                    }}
+                    className="shrink-0 p-1 rounded text-slate-600 hover:text-emerald-400 hover:bg-emerald-900/20 transition-all"
+                    title="Move student"
+                  >
+                    <MoveRight size={11} />
+                  </button>
+                )}
 
                 {/* Delete button */}
                 <button
@@ -398,6 +533,15 @@ export default function TeacherConsole({ config, onConfigUpdate }: TeacherConsol
                     <button id="export-btn" onClick={exportToPDF} className="p-2 border border-slate-200 rounded text-slate-500 hover:bg-slate-100 transition-all" title="Export PDF">
                       <Download size={14} />
                     </button>
+                    {isAdminMode && (
+                      <button
+                        onClick={() => setMoveAction({ submission: selectedSub, targetTeacher: '' })}
+                        className="p-2 border border-emerald-200 rounded text-emerald-600 hover:bg-emerald-50 transition-all"
+                        title="Move student"
+                      >
+                        <MoveRight size={14} />
+                      </button>
+                    )}
                     <button
                       onClick={() => setConfirmAction({ type: 'delete-one', submission: selectedSub })}
                       className="p-2 border border-red-200 rounded text-red-400 hover:bg-red-50 transition-all"
