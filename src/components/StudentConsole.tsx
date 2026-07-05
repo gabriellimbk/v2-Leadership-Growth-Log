@@ -13,6 +13,10 @@ interface StudentConsoleProps {
   teachers: TeacherEntry[];
 }
 
+function isSectionEnabled(section: { enabled?: boolean }) {
+  return section.enabled !== false;
+}
+
 export default function StudentConsole({ config, teachers }: StudentConsoleProps) {
   const { studentUser, studentLoading } = useAuth();
   const [submission, setSubmission] = useState<Submission | null>(null);
@@ -20,7 +24,9 @@ export default function StudentConsole({ config, teachers }: StudentConsoleProps
     section1: {},
     section2: {},
     section3: {},
-    section4: []
+    section4: [],
+    section5: '',
+    section6: ''
   });
   const [isSaving, setIsSaving] = useState(false);
   const [dataLoading, setDataLoading] = useState(false);
@@ -99,7 +105,9 @@ export default function StudentConsole({ config, teachers }: StudentConsoleProps
                   section1: {},
                   section2: {},
                   section3: {},
-                  section4: config.section4.questions.map(() => '')
+                  section4: config.section4.questions.map(() => ''),
+                  section5: '',
+                  section6: ''
                 };
                 const newSub: Submission = {
                   studentUid: studentUser.uid,
@@ -196,6 +204,7 @@ export default function StudentConsole({ config, teachers }: StudentConsoleProps
         <div className="max-w-5xl mx-auto flex flex-col space-y-4">
 
           {/* Section 1 */}
+          {isSectionEnabled(config.section1) && (
           <div className="bg-white border border-slate-200 rounded-md p-5 shadow-sm">
             <h2 className="text-[12px] font-black text-slate-800 border-l-4 border-[#004d33] pl-3 mb-2 uppercase tracking-widest">
               {config.section1.title}
@@ -230,8 +239,10 @@ export default function StudentConsole({ config, teachers }: StudentConsoleProps
               </div>
             )}
           </div>
+          )}
 
           {/* Section 2 */}
+          {isSectionEnabled(config.section2) && (
           <div className="bg-white border border-slate-200 rounded-md p-5 shadow-sm">
             <h2 className="text-[12px] font-black text-slate-800 border-l-4 border-[#004d33] pl-3 mb-2 uppercase tracking-widest">
               {config.section2.title}
@@ -266,8 +277,10 @@ export default function StudentConsole({ config, teachers }: StudentConsoleProps
               </div>
             )}
           </div>
+          )}
 
           {/* Section 3 */}
+          {isSectionEnabled(config.section3) && (
           <div className="bg-white border border-slate-200 rounded-md p-5 shadow-sm">
             <h2 className="text-[12px] font-black text-slate-800 border-l-4 border-[#004d33] pl-3 mb-2 uppercase tracking-widest">
               {config.section3.title}
@@ -312,8 +325,10 @@ export default function StudentConsole({ config, teachers }: StudentConsoleProps
               </div>
             )}
           </div>
+          )}
 
           {/* Section 4 */}
+          {isSectionEnabled(config.section4) && (
           <div className="bg-white border border-slate-200 rounded-md p-5 shadow-sm">
             <h2 className="text-[12px] font-black text-slate-800 border-l-4 border-[#004d33] pl-3 mb-2 uppercase tracking-widest">
               {config.section4.title}
@@ -359,6 +374,65 @@ export default function StudentConsole({ config, teachers }: StudentConsoleProps
               ))}
             </div>
           </div>
+          )}
+
+          {/* Section 5 */}
+          {isSectionEnabled(config.section5) && (
+          <div className="bg-white border border-slate-200 rounded-md p-5 shadow-sm">
+            <h2 className="text-[12px] font-black text-slate-800 border-l-4 border-[#004d33] pl-3 mb-2 uppercase tracking-widest">
+              {config.section5.title}
+            </h2>
+            <div className="space-y-4">
+              <label className="text-[11px] font-bold text-slate-600 italic block leading-relaxed pr-8">{config.section5.question}</label>
+              <textarea
+                value={answers.section5 || ''}
+                onChange={e => setAnswers({ ...answers, section5: e.target.value })}
+                className="w-full text-[12px] border border-slate-200 rounded-md p-4 min-h-[140px] focus:bg-white bg-slate-50/50 transition-all outline-none leading-relaxed font-medium focus:ring-2 focus:ring-[#004d33]/20"
+                placeholder="Type your response here..."
+              />
+              {submission?.comments?.section5 && (
+                <div className="p-4 bg-amber-50 border border-amber-100 rounded-r-md rounded-bl-md flex gap-3.5 items-start shadow-sm border-l-4 border-l-amber-400">
+                  <div className="p-1.5 bg-white rounded text-amber-500 shrink-0 border border-amber-50 shadow-sm">
+                    <MessageSquare size={12} />
+                  </div>
+                  <div>
+                    <div className="text-[8px] font-black text-amber-800 uppercase tracking-widest leading-none mb-1.5 opacity-50">Mentor Insight</div>
+                    <p className="text-[11px] text-amber-900 font-medium italic leading-relaxed">{submission.comments.section5}</p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+          )}
+
+          {/* Section 6 */}
+          {isSectionEnabled(config.section6) && (
+          <div className="bg-white border border-slate-200 rounded-md p-5 shadow-sm">
+            <h2 className="text-[12px] font-black text-slate-800 border-l-4 border-[#004d33] pl-3 mb-2 uppercase tracking-widest">
+              {config.section6.title}
+            </h2>
+            <div className="space-y-4">
+              <label className="text-[11px] font-bold text-slate-600 italic block leading-relaxed pr-8">{config.section6.question}</label>
+              <textarea
+                value={answers.section6 || ''}
+                onChange={e => setAnswers({ ...answers, section6: e.target.value })}
+                className="w-full text-[12px] border border-slate-200 rounded-md p-4 min-h-[140px] focus:bg-white bg-slate-50/50 transition-all outline-none leading-relaxed font-medium focus:ring-2 focus:ring-[#004d33]/20"
+                placeholder="Type your response here..."
+              />
+              {submission?.comments?.section6 && (
+                <div className="p-4 bg-amber-50 border border-amber-100 rounded-r-md rounded-bl-md flex gap-3.5 items-start shadow-sm border-l-4 border-l-amber-400">
+                  <div className="p-1.5 bg-white rounded text-amber-500 shrink-0 border border-amber-50 shadow-sm">
+                    <MessageSquare size={12} />
+                  </div>
+                  <div>
+                    <div className="text-[8px] font-black text-amber-800 uppercase tracking-widest leading-none mb-1.5 opacity-50">Mentor Insight</div>
+                    <p className="text-[11px] text-amber-900 font-medium italic leading-relaxed">{submission.comments.section6}</p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+          )}
 
         </div>
       </main>

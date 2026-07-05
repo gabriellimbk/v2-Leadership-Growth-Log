@@ -17,6 +17,12 @@ interface TeacherConsoleProps {
   mode?: 'teacher' | 'admin';
 }
 
+type EditableSectionKey = 'section1' | 'section2' | 'section3' | 'section4' | 'section5' | 'section6';
+
+function isSectionEnabled(section: { enabled?: boolean }) {
+  return section.enabled !== false;
+}
+
 type ConfirmAction =
   | { type: 'delete-one'; submission: Submission }
   | { type: 'delete-all'; teacher: string };
@@ -183,6 +189,16 @@ export default function TeacherConsole({ config, onConfigUpdate, teachers, mode 
     } finally {
       setIsSaving(false);
     }
+  };
+
+  const updateConfigSection = <K extends EditableSectionKey>(key: K, updates: Partial<FormConfig[K]>) => {
+    setEditableConfig(prev => ({
+      ...prev,
+      [key]: {
+        ...prev[key],
+        ...updates,
+      },
+    }));
   };
 
   const handleDeleteOne = async (sub: Submission) => {
@@ -429,10 +445,30 @@ export default function TeacherConsole({ config, onConfigUpdate, teachers, mode 
 
                   {/* Section 1 */}
                   <div className="bg-white border border-slate-200 rounded-md p-6 shadow-sm space-y-4">
-                    <label className="text-[10px] font-black text-rose-600 uppercase tracking-widest border-b border-slate-100 pb-2 block">Section 1: Who I Am</label>
+                    <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                      <label className="text-[10px] font-black text-rose-600 uppercase tracking-widest">Section 1</label>
+                      <label className="flex items-center gap-2 text-[9px] font-black text-slate-500 uppercase tracking-widest">
+                        <input
+                          type="checkbox"
+                          checked={isSectionEnabled(editableConfig.section1)}
+                          onChange={e => updateConfigSection('section1', { enabled: e.target.checked })}
+                          className="h-3.5 w-3.5 accent-[#004d33]"
+                        />
+                        Show to students
+                      </label>
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[8px] font-bold text-slate-400 uppercase">Section title</label>
+                      <input
+                        type="text"
+                        value={editableConfig.section1.title}
+                        onChange={e => updateConfigSection('section1', { title: e.target.value })}
+                        className="w-full p-2 bg-slate-50 border border-slate-200 rounded text-[10px] font-bold uppercase"
+                      />
+                    </div>
                     <div className="space-y-1">
                       <label className="text-[8px] font-bold text-slate-400 uppercase">Instructions shown to students</label>
-                      <textarea value={editableConfig.section1.description} onChange={e => setEditableConfig({ ...editableConfig, section1: { ...editableConfig.section1, description: e.target.value } })}
+                      <textarea value={editableConfig.section1.description} onChange={e => updateConfigSection('section1', { description: e.target.value })}
                         className="w-full p-2 bg-slate-50 border border-slate-200 rounded text-[11px] resize-none h-16 focus:bg-white outline-none" />
                     </div>
                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -442,7 +478,7 @@ export default function TeacherConsole({ config, onConfigUpdate, teachers, mode 
                           <input type="text" value={c} onChange={e => {
                             const newCols = [...editableConfig.section1.columns];
                             newCols[idx] = e.target.value;
-                            setEditableConfig({ ...editableConfig, section1: { ...editableConfig.section1, columns: newCols } });
+                            updateConfigSection('section1', { columns: newCols });
                           }} className="w-full p-2 bg-slate-50 border border-slate-200 rounded text-[10px] font-bold uppercase" />
                         </div>
                       ))}
@@ -451,10 +487,30 @@ export default function TeacherConsole({ config, onConfigUpdate, teachers, mode 
 
                   {/* Section 2 */}
                   <div className="bg-white border border-slate-200 rounded-md p-6 shadow-sm space-y-4">
-                    <label className="text-[10px] font-black text-orange-600 uppercase tracking-widest border-b border-slate-100 pb-2 block">Section 2: What Leaders Do</label>
+                    <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                      <label className="text-[10px] font-black text-orange-600 uppercase tracking-widest">Section 2</label>
+                      <label className="flex items-center gap-2 text-[9px] font-black text-slate-500 uppercase tracking-widest">
+                        <input
+                          type="checkbox"
+                          checked={isSectionEnabled(editableConfig.section2)}
+                          onChange={e => updateConfigSection('section2', { enabled: e.target.checked })}
+                          className="h-3.5 w-3.5 accent-[#004d33]"
+                        />
+                        Show to students
+                      </label>
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[8px] font-bold text-slate-400 uppercase">Section title</label>
+                      <input
+                        type="text"
+                        value={editableConfig.section2.title}
+                        onChange={e => updateConfigSection('section2', { title: e.target.value })}
+                        className="w-full p-2 bg-slate-50 border border-slate-200 rounded text-[10px] font-bold uppercase"
+                      />
+                    </div>
                     <div className="space-y-1">
                       <label className="text-[8px] font-bold text-slate-400 uppercase">Instructions shown to students</label>
-                      <textarea value={editableConfig.section2.description} onChange={e => setEditableConfig({ ...editableConfig, section2: { ...editableConfig.section2, description: e.target.value } })}
+                      <textarea value={editableConfig.section2.description} onChange={e => updateConfigSection('section2', { description: e.target.value })}
                         className="w-full p-2 bg-slate-50 border border-slate-200 rounded text-[11px] resize-none h-16 focus:bg-white outline-none" />
                     </div>
                     <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
@@ -479,17 +535,57 @@ export default function TeacherConsole({ config, onConfigUpdate, teachers, mode 
 
                   {/* Section 3 */}
                   <div className="bg-white border border-slate-200 rounded-md p-6 shadow-sm space-y-4">
-                    <label className="text-[10px] font-black text-teal-600 uppercase tracking-widest border-b border-slate-100 pb-2 block">Section 3: Where Am I Now?</label>
+                    <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                      <label className="text-[10px] font-black text-teal-600 uppercase tracking-widest">Section 3</label>
+                      <label className="flex items-center gap-2 text-[9px] font-black text-slate-500 uppercase tracking-widest">
+                        <input
+                          type="checkbox"
+                          checked={isSectionEnabled(editableConfig.section3)}
+                          onChange={e => updateConfigSection('section3', { enabled: e.target.checked })}
+                          className="h-3.5 w-3.5 accent-[#004d33]"
+                        />
+                        Show to students
+                      </label>
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[8px] font-bold text-slate-400 uppercase">Section title</label>
+                      <input
+                        type="text"
+                        value={editableConfig.section3.title}
+                        onChange={e => updateConfigSection('section3', { title: e.target.value })}
+                        className="w-full p-2 bg-slate-50 border border-slate-200 rounded text-[10px] font-bold uppercase"
+                      />
+                    </div>
                     <div className="space-y-1">
                       <label className="text-[8px] font-bold text-slate-400 uppercase">Instructions shown to students</label>
-                      <textarea value={editableConfig.section3.description} onChange={e => setEditableConfig({ ...editableConfig, section3: { ...editableConfig.section3, description: e.target.value } })}
+                      <textarea value={editableConfig.section3.description} onChange={e => updateConfigSection('section3', { description: e.target.value })}
                         className="w-full p-2 bg-slate-50 border border-slate-200 rounded text-[11px] resize-none h-16 focus:bg-white outline-none" />
                     </div>
                   </div>
 
                   {/* Section 4 */}
                   <div className="bg-white border border-slate-200 rounded-md p-6 shadow-sm space-y-4">
-                    <label className="text-[10px] font-black text-amber-600 uppercase tracking-widest border-b border-slate-100 pb-2 block">Section 4: The Leader I Want To Be</label>
+                    <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                      <label className="text-[10px] font-black text-amber-600 uppercase tracking-widest">Section 4</label>
+                      <label className="flex items-center gap-2 text-[9px] font-black text-slate-500 uppercase tracking-widest">
+                        <input
+                          type="checkbox"
+                          checked={isSectionEnabled(editableConfig.section4)}
+                          onChange={e => updateConfigSection('section4', { enabled: e.target.checked })}
+                          className="h-3.5 w-3.5 accent-[#004d33]"
+                        />
+                        Show to students
+                      </label>
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[8px] font-bold text-slate-400 uppercase">Section title</label>
+                      <input
+                        type="text"
+                        value={editableConfig.section4.title}
+                        onChange={e => updateConfigSection('section4', { title: e.target.value })}
+                        className="w-full p-2 bg-slate-50 border border-slate-200 rounded text-[10px] font-bold uppercase"
+                      />
+                    </div>
                     <div className="space-y-4">
                       {editableConfig.section4.questions.map((q, idx) => (
                         <div key={idx} className="flex gap-4 items-start">
@@ -499,12 +595,78 @@ export default function TeacherConsole({ config, onConfigUpdate, teachers, mode 
                             onChange={e => {
                               const newQs = [...editableConfig.section4.questions];
                               newQs[idx] = e.target.value;
-                              setEditableConfig({ ...editableConfig, section4: { ...editableConfig.section4, questions: newQs } });
+                              updateConfigSection('section4', { questions: newQs });
                             }}
                             className="flex-grow p-3 bg-slate-50 border border-slate-200 rounded text-[11px] leading-tight resize-none h-20 focus:bg-white transition-all outline-none"
                           />
                         </div>
                       ))}
+                    </div>
+                  </div>
+
+                  {/* Section 5 */}
+                  <div className="bg-white border border-slate-200 rounded-md p-6 shadow-sm space-y-4">
+                    <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                      <label className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">Section 5</label>
+                      <label className="flex items-center gap-2 text-[9px] font-black text-slate-500 uppercase tracking-widest">
+                        <input
+                          type="checkbox"
+                          checked={isSectionEnabled(editableConfig.section5)}
+                          onChange={e => updateConfigSection('section5', { enabled: e.target.checked })}
+                          className="h-3.5 w-3.5 accent-[#004d33]"
+                        />
+                        Show to students
+                      </label>
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[8px] font-bold text-slate-400 uppercase">Section title</label>
+                      <input
+                        type="text"
+                        value={editableConfig.section5.title}
+                        onChange={e => updateConfigSection('section5', { title: e.target.value })}
+                        className="w-full p-2 bg-slate-50 border border-slate-200 rounded text-[10px] font-bold uppercase"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[8px] font-bold text-slate-400 uppercase">Question shown to students</label>
+                      <textarea
+                        value={editableConfig.section5.question}
+                        onChange={e => updateConfigSection('section5', { question: e.target.value })}
+                        className="w-full p-3 bg-slate-50 border border-slate-200 rounded text-[11px] leading-tight resize-none h-20 focus:bg-white transition-all outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Section 6 */}
+                  <div className="bg-white border border-slate-200 rounded-md p-6 shadow-sm space-y-4">
+                    <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                      <label className="text-[10px] font-black text-cyan-600 uppercase tracking-widest">Section 6</label>
+                      <label className="flex items-center gap-2 text-[9px] font-black text-slate-500 uppercase tracking-widest">
+                        <input
+                          type="checkbox"
+                          checked={isSectionEnabled(editableConfig.section6)}
+                          onChange={e => updateConfigSection('section6', { enabled: e.target.checked })}
+                          className="h-3.5 w-3.5 accent-[#004d33]"
+                        />
+                        Show to students
+                      </label>
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[8px] font-bold text-slate-400 uppercase">Section title</label>
+                      <input
+                        type="text"
+                        value={editableConfig.section6.title}
+                        onChange={e => updateConfigSection('section6', { title: e.target.value })}
+                        className="w-full p-2 bg-slate-50 border border-slate-200 rounded text-[10px] font-bold uppercase"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[8px] font-bold text-slate-400 uppercase">Question shown to students</label>
+                      <textarea
+                        value={editableConfig.section6.question}
+                        onChange={e => updateConfigSection('section6', { question: e.target.value })}
+                        className="w-full p-3 bg-slate-50 border border-slate-200 rounded text-[11px] leading-tight resize-none h-20 focus:bg-white transition-all outline-none"
+                      />
                     </div>
                   </div>
 
@@ -558,6 +720,7 @@ export default function TeacherConsole({ config, onConfigUpdate, teachers, mode 
                 <div className="flex-1 grid grid-cols-12 gap-6 overflow-hidden" id="report-to-pdf">
                   <div className="col-span-12 lg:col-span-8 space-y-4 overflow-y-auto pr-2">
                     {/* Section 1 */}
+                    {isSectionEnabled(config.section1) && (
                     <div className="bg-white border border-slate-200 rounded-md p-5 shadow-sm">
                       <h3 className="text-[14px] font-black text-slate-800 border-l-4 border-[#004d33] pl-3 mb-2 uppercase tracking-widest">{config.section1.title}</h3>
                       <p className="text-[12px] text-slate-400 font-bold mb-5 italic border-l-4 border-transparent px-3">{config.section1.description}</p>
@@ -570,8 +733,10 @@ export default function TeacherConsole({ config, onConfigUpdate, teachers, mode 
                         ))}
                       </div>
                     </div>
+                    )}
 
                     {/* Section 2 */}
+                    {isSectionEnabled(config.section2) && (
                     <div className="bg-white border border-slate-200 rounded-md p-5 shadow-sm">
                       <h3 className="text-[14px] font-black text-slate-800 border-l-4 border-[#004d33] pl-3 mb-2 uppercase tracking-widest">{config.section2.title}</h3>
                       <p className="text-[12px] text-slate-400 font-bold mb-5 italic border-l-4 border-transparent px-3">{config.section2.description}</p>
@@ -584,8 +749,10 @@ export default function TeacherConsole({ config, onConfigUpdate, teachers, mode 
                         ))}
                       </div>
                     </div>
+                    )}
 
                     {/* Section 3 */}
+                    {isSectionEnabled(config.section3) && (
                     <div className="bg-white border border-slate-200 rounded-md p-5 shadow-sm">
                       <h3 className="text-[14px] font-black text-slate-800 border-l-4 border-[#004d33] pl-3 mb-2 uppercase tracking-widest">{config.section3.title}</h3>
                       <p className="text-[12px] text-slate-400 font-bold mb-5 italic border-l-4 border-transparent px-3">{config.section3.description}</p>
@@ -603,8 +770,10 @@ export default function TeacherConsole({ config, onConfigUpdate, teachers, mode 
                         ))}
                       </div>
                     </div>
+                    )}
 
                     {/* Section 4 */}
+                    {isSectionEnabled(config.section4) && (
                     <div className="bg-white border border-slate-200 rounded-md p-5 shadow-sm">
                       <h3 className="text-[14px] font-black text-slate-800 border-l-4 border-[#004d33] pl-3 mb-2 uppercase tracking-widest">{config.section4.title}</h3>
                       {config.section4.description && <p className="text-[12px] text-slate-400 font-bold mb-5 italic border-l-4 border-transparent px-3">{config.section4.description}</p>}
@@ -617,6 +786,29 @@ export default function TeacherConsole({ config, onConfigUpdate, teachers, mode 
                         ))}
                       </div>
                     </div>
+                    )}
+
+                    {/* Section 5 */}
+                    {isSectionEnabled(config.section5) && (
+                    <div className="bg-white border border-slate-200 rounded-md p-5 shadow-sm">
+                      <h3 className="text-[14px] font-black text-slate-800 border-l-4 border-[#004d33] pl-3 mb-2 uppercase tracking-widest">{config.section5.title}</h3>
+                      <div className="border-b border-slate-100 pb-4 last:border-0">
+                        <p className="text-[11px] font-bold text-slate-400 italic mb-2">{config.section5.question}</p>
+                        <div className="text-[13px] font-medium text-slate-800 leading-relaxed bg-slate-50 p-3 rounded">{selectedSub.answers.section5 || '—'}</div>
+                      </div>
+                    </div>
+                    )}
+
+                    {/* Section 6 */}
+                    {isSectionEnabled(config.section6) && (
+                    <div className="bg-white border border-slate-200 rounded-md p-5 shadow-sm">
+                      <h3 className="text-[14px] font-black text-slate-800 border-l-4 border-[#004d33] pl-3 mb-2 uppercase tracking-widest">{config.section6.title}</h3>
+                      <div className="border-b border-slate-100 pb-4 last:border-0">
+                        <p className="text-[11px] font-bold text-slate-400 italic mb-2">{config.section6.question}</p>
+                        <div className="text-[13px] font-medium text-slate-800 leading-relaxed bg-slate-50 p-3 rounded">{selectedSub.answers.section6 || '—'}</div>
+                      </div>
+                    </div>
+                    )}
                   </div>
 
                   {/* Feedback sidecar */}
@@ -629,6 +821,7 @@ export default function TeacherConsole({ config, onConfigUpdate, teachers, mode 
                     <div className="flex-1 overflow-y-auto p-4 space-y-5">
 
                       {/* Section 1 feedback */}
+                      {isSectionEnabled(config.section1) && (
                       <div className="space-y-2">
                         <div className="pb-1 border-b border-orange-200">
                           <p className="text-sm font-black text-slate-900 uppercase tracking-tight">{config.section1.title}</p>
@@ -637,8 +830,10 @@ export default function TeacherConsole({ config, onConfigUpdate, teachers, mode 
                         <textarea value={selectedSub.comments.section1 || ''} onChange={e => setSelectedSub({ ...selectedSub, comments: { ...selectedSub.comments, section1: e.target.value } })}
                           className="w-full text-[11px] p-3 bg-white border border-orange-100 rounded italic min-h-[80px] focus:ring-1 focus:ring-orange-500 outline-none" placeholder="Enter feedback for this section..." />
                       </div>
+                      )}
 
                       {/* Section 2 feedback */}
+                      {isSectionEnabled(config.section2) && (
                       <div className="space-y-2">
                         <div className="pb-1 border-b border-orange-200">
                           <p className="text-sm font-black text-slate-900 uppercase tracking-tight">{config.section2.title}</p>
@@ -647,8 +842,10 @@ export default function TeacherConsole({ config, onConfigUpdate, teachers, mode 
                         <textarea value={selectedSub.comments.section2 || ''} onChange={e => setSelectedSub({ ...selectedSub, comments: { ...selectedSub.comments, section2: e.target.value } })}
                           className="w-full text-[11px] p-3 bg-white border border-orange-100 rounded italic min-h-[80px] focus:ring-1 focus:ring-orange-500 outline-none" placeholder="Enter feedback for this section..." />
                       </div>
+                      )}
 
                       {/* Section 3 feedback */}
+                      {isSectionEnabled(config.section3) && (
                       <div className="space-y-2">
                         <div className="pb-1 border-b border-orange-200">
                           <p className="text-sm font-black text-slate-900 uppercase tracking-tight">{config.section3.title}</p>
@@ -657,8 +854,10 @@ export default function TeacherConsole({ config, onConfigUpdate, teachers, mode 
                         <textarea value={selectedSub.comments.section3 || ''} onChange={e => setSelectedSub({ ...selectedSub, comments: { ...selectedSub.comments, section3: e.target.value } })}
                           className="w-full text-[11px] p-3 bg-white border border-orange-100 rounded italic min-h-[80px] focus:ring-1 focus:ring-orange-500 outline-none" placeholder="Enter feedback for this section..." />
                       </div>
+                      )}
 
                       {/* Section 4 per-question feedback */}
+                      {isSectionEnabled(config.section4) && (
                       <div className="space-y-4 pt-2 border-t border-orange-200">
                         <div className="pb-1 border-b border-orange-200">
                           <p className="text-sm font-black text-slate-900 uppercase tracking-tight">{config.section4.title}</p>
@@ -680,6 +879,39 @@ export default function TeacherConsole({ config, onConfigUpdate, teachers, mode 
                           </div>
                         ))}
                       </div>
+                      )}
+
+                      {/* Section 5 feedback */}
+                      {isSectionEnabled(config.section5) && (
+                      <div className="space-y-2 pt-2 border-t border-orange-200">
+                        <div className="pb-1 border-b border-orange-200">
+                          <p className="text-sm font-black text-slate-900 uppercase tracking-tight">{config.section5.title}</p>
+                          <p className="text-[9px] text-orange-400 font-bold uppercase tracking-widest mt-0.5">Mentor Feedback</p>
+                        </div>
+                        <textarea
+                          value={selectedSub.comments.section5 || ''}
+                          onChange={e => setSelectedSub({ ...selectedSub, comments: { ...selectedSub.comments, section5: e.target.value } })}
+                          className="w-full text-[11px] p-3 bg-white border border-orange-100 rounded italic min-h-[80px] focus:ring-1 focus:ring-orange-500 outline-none"
+                          placeholder="Enter feedback for this section..."
+                        />
+                      </div>
+                      )}
+
+                      {/* Section 6 feedback */}
+                      {isSectionEnabled(config.section6) && (
+                      <div className="space-y-2 pt-2 border-t border-orange-200">
+                        <div className="pb-1 border-b border-orange-200">
+                          <p className="text-sm font-black text-slate-900 uppercase tracking-tight">{config.section6.title}</p>
+                          <p className="text-[9px] text-orange-400 font-bold uppercase tracking-widest mt-0.5">Mentor Feedback</p>
+                        </div>
+                        <textarea
+                          value={selectedSub.comments.section6 || ''}
+                          onChange={e => setSelectedSub({ ...selectedSub, comments: { ...selectedSub.comments, section6: e.target.value } })}
+                          className="w-full text-[11px] p-3 bg-white border border-orange-100 rounded italic min-h-[80px] focus:ring-1 focus:ring-orange-500 outline-none"
+                          placeholder="Enter feedback for this section..."
+                        />
+                      </div>
+                      )}
 
                     </div>
                   </div>
@@ -695,6 +927,7 @@ export default function TeacherConsole({ config, onConfigUpdate, teachers, mode 
                 <div className="p-6 max-w-5xl mx-auto flex flex-col space-y-4">
 
                   {/* Section 1 */}
+                  {isSectionEnabled(config.section1) && (
                   <div className="bg-white border border-slate-200 rounded-md p-5 shadow-sm">
                     <h2 className="text-[14px] font-black text-slate-800 border-l-4 border-[#004d33] pl-3 mb-2 uppercase tracking-widest">
                       {config.section1.title}
@@ -716,8 +949,10 @@ export default function TeacherConsole({ config, onConfigUpdate, teachers, mode 
                       ))}
                     </div>
                   </div>
+                  )}
 
                   {/* Section 2 */}
+                  {isSectionEnabled(config.section2) && (
                   <div className="bg-white border border-slate-200 rounded-md p-5 shadow-sm">
                     <h2 className="text-[14px] font-black text-slate-800 border-l-4 border-[#004d33] pl-3 mb-2 uppercase tracking-widest">
                       {config.section2.title}
@@ -739,8 +974,10 @@ export default function TeacherConsole({ config, onConfigUpdate, teachers, mode 
                       ))}
                     </div>
                   </div>
+                  )}
 
                   {/* Section 3 */}
+                  {isSectionEnabled(config.section3) && (
                   <div className="bg-white border border-slate-200 rounded-md p-5 shadow-sm">
                     <h2 className="text-[14px] font-black text-slate-800 border-l-4 border-[#004d33] pl-3 mb-2 uppercase tracking-widest">
                       {config.section3.title}
@@ -766,8 +1003,10 @@ export default function TeacherConsole({ config, onConfigUpdate, teachers, mode 
                       ))}
                     </div>
                   </div>
+                  )}
 
                   {/* Section 4 */}
+                  {isSectionEnabled(config.section4) && (
                   <div className="bg-white border border-slate-200 rounded-md p-5 shadow-sm">
                     <h2 className="text-[14px] font-black text-slate-800 border-l-4 border-[#004d33] pl-3 mb-2 uppercase tracking-widest">
                       {config.section4.title}
@@ -791,6 +1030,39 @@ export default function TeacherConsole({ config, onConfigUpdate, teachers, mode 
                       ))}
                     </div>
                   </div>
+                  )}
+
+                  {/* Section 5 */}
+                  {isSectionEnabled(config.section5) && (
+                  <div className="bg-white border border-slate-200 rounded-md p-5 shadow-sm">
+                    <h2 className="text-[14px] font-black text-slate-800 border-l-4 border-[#004d33] pl-3 mb-2 uppercase tracking-widest">
+                      {config.section5.title}
+                    </h2>
+                    <div className="space-y-4">
+                      <label className="text-[11px] font-bold text-slate-600 italic block leading-relaxed pr-8">{config.section5.question}</label>
+                      <textarea disabled
+                        className="w-full text-[12px] border border-slate-200 rounded-md p-4 min-h-[140px] bg-slate-50/50 outline-none leading-relaxed font-medium cursor-default"
+                        placeholder="Type your response here..."
+                      />
+                    </div>
+                  </div>
+                  )}
+
+                  {/* Section 6 */}
+                  {isSectionEnabled(config.section6) && (
+                  <div className="bg-white border border-slate-200 rounded-md p-5 shadow-sm">
+                    <h2 className="text-[14px] font-black text-slate-800 border-l-4 border-[#004d33] pl-3 mb-2 uppercase tracking-widest">
+                      {config.section6.title}
+                    </h2>
+                    <div className="space-y-4">
+                      <label className="text-[11px] font-bold text-slate-600 italic block leading-relaxed pr-8">{config.section6.question}</label>
+                      <textarea disabled
+                        className="w-full text-[12px] border border-slate-200 rounded-md p-4 min-h-[140px] bg-slate-50/50 outline-none leading-relaxed font-medium cursor-default"
+                        placeholder="Type your response here..."
+                      />
+                    </div>
+                  </div>
+                  )}
 
                 </div>
               </motion.div>
