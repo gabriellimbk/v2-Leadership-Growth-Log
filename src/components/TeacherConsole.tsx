@@ -743,7 +743,7 @@ export default function TeacherConsole({ config, onConfigUpdate, teachers, mode 
                       <div className="grid grid-cols-1 md:grid-cols-5 gap-0 border border-[#004d33]/20 rounded-md overflow-hidden">
                         {config.section2.columns.map((col, idx) => (
                           <div key={idx} className="flex flex-col border-r last:border-r-0 border-[#004d33]/20">
-                            <div className="bg-[#004d33] text-white p-2 text-center"><p className="text-[9px] font-black uppercase tracking-tight truncate">{col}</p></div>
+                            <div className="bg-[#004d33] text-white p-2 text-center md:min-h-[18rem] flex items-center justify-center"><p className="text-[9px] font-black uppercase tracking-tight leading-relaxed break-words">{col}</p></div>
                             <div className="bg-white p-3 min-h-[100px]"><p className="text-[12px] font-bold leading-snug text-slate-800">{selectedSub.answers.section2[col] || '—'}</p></div>
                           </div>
                         ))}
@@ -963,8 +963,8 @@ export default function TeacherConsole({ config, onConfigUpdate, teachers, mode 
                     <div className="grid grid-cols-1 md:grid-cols-5 gap-0 mb-4 border border-[#004d33]/20 rounded-md overflow-hidden">
                       {config.section2.columns.map((col, idx) => (
                         <div key={idx} className="flex flex-col border-r last:border-r-0 border-[#004d33]/20">
-                          <div className="bg-[#004d33] text-white p-2.5 text-center">
-                            <label className="text-[11px] font-black uppercase tracking-tight leading-none">{col}</label>
+                          <div className="bg-[#004d33] text-white p-2.5 text-center md:min-h-[18rem] flex items-center justify-center">
+                            <label className="text-[11px] font-black uppercase tracking-tight leading-relaxed break-words">{col}</label>
                           </div>
                           <textarea disabled
                             className="text-[11px] bg-white text-[#1a1a1a] p-3 h-40 w-full resize-none outline-none leading-relaxed font-bold placeholder:text-slate-200 cursor-default"

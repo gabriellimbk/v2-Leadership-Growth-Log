@@ -253,8 +253,8 @@ export default function StudentConsole({ config, teachers }: StudentConsoleProps
             <div className="grid grid-cols-1 md:grid-cols-5 gap-0 mb-4 border border-[#004d33]/20 rounded-md overflow-hidden">
               {config.section2.columns.map((col, idx) => (
                 <div key={idx} className="flex flex-col border-r last:border-r-0 border-[#004d33]/20">
-                  <div className="bg-[#004d33] text-white p-2.5 text-center">
-                    <label className="text-[11px] font-black uppercase tracking-tight leading-none truncate">{col}</label>
+                  <div className="bg-[#004d33] text-white p-2.5 text-center md:min-h-[18rem] flex items-center justify-center">
+                    <label className="text-[11px] font-black uppercase tracking-tight leading-relaxed break-words">{col}</label>
                   </div>
                   <textarea
                     value={answers.section2[col] || ''}
