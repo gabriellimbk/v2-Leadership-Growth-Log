@@ -12,6 +12,7 @@ export interface FormConfig {
     title: string;
     description: string;
     columns: string[];
+    headerRows?: string[][];
   };
   section3: {
     enabled?: boolean;

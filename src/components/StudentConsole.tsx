@@ -17,6 +17,18 @@ function isSectionEnabled(section: { enabled?: boolean }) {
   return section.enabled !== false;
 }
 
+function getSection2HeaderText(config: FormConfig['section2'], rowIndex: number, columnIndex: number) {
+  return config.headerRows?.[rowIndex]?.[columnIndex] || 'placeholder';
+}
+
+function getPracticeScoreKey(index: number) {
+  return `practice-${index}`;
+}
+
+function getPracticeScore(section3Answers: Submission['answers']['section3'], practice: string, index: number) {
+  return section3Answers[getPracticeScoreKey(index)] ?? section3Answers[practice] ?? 3;
+}
+
 export default function StudentConsole({ config, teachers }: StudentConsoleProps) {
   const { studentUser, studentLoading } = useAuth();
   const [submission, setSubmission] = useState<Submission | null>(null);
@@ -253,8 +265,20 @@ export default function StudentConsole({ config, teachers }: StudentConsoleProps
             <div className="grid grid-cols-1 md:grid-cols-5 gap-0 mb-4 border border-[#004d33]/20 rounded-md overflow-hidden">
               {config.section2.columns.map((col, idx) => (
                 <div key={idx} className="flex flex-col border-r last:border-r-0 border-[#004d33]/20">
-                  <div className="bg-[#004d33] text-white p-2.5 text-center md:min-h-[18rem] flex items-center justify-center">
-                    <label className="text-[11px] font-black uppercase tracking-tight leading-relaxed break-words">{col}</label>
+                  <div className="bg-[#004d33] text-white text-center md:min-h-[18rem] grid grid-rows-3">
+                    <div className="p-2.5 flex items-center justify-center border-b border-white/15">
+                      <label className="text-[11px] font-black uppercase tracking-tight leading-relaxed break-words">{col}</label>
+                    </div>
+                    <div className="p-2.5 flex items-center justify-center border-b border-white/15">
+                      <p className="text-[11px] font-normal normal-case tracking-normal leading-relaxed break-words">
+                        {getSection2HeaderText(config.section2, 0, idx)}
+                      </p>
+                    </div>
+                    <div className="p-2.5 flex items-center justify-center">
+                      <p className="text-[11px] font-normal normal-case tracking-normal leading-relaxed break-words">
+                        {getSection2HeaderText(config.section2, 1, idx)}
+                      </p>
+                    </div>
                   </div>
                   <textarea
                     value={answers.section2[col] || ''}
@@ -289,29 +313,33 @@ export default function StudentConsole({ config, teachers }: StudentConsoleProps
               {config.section3.description}
             </p>
             <div className="space-y-6">
-              {config.section3.practices.map(practice => (
-                <div key={practice} className="space-y-2">
-                  <div className="flex justify-between items-center px-1">
-                    <label className="text-[13px] font-black text-slate-500 uppercase tracking-tight">{practice}</label>
-                    <span className="text-[11px] font-black text-[#004d33] bg-[#004d33]/5 px-2 py-0.5 rounded border border-[#004d33]/10">
-                      {(answers.section3[practice] || 3).toFixed(0)} / 5
-                    </span>
+              {config.section3.practices.map((practice, idx) => {
+                const scoreKey = getPracticeScoreKey(idx);
+                const score = getPracticeScore(answers.section3, practice, idx);
+                return (
+                  <div key={scoreKey} className="space-y-2">
+                    <div className="flex justify-between items-center px-1">
+                      <label className="text-[13px] font-black text-slate-500 tracking-tight">{practice}</label>
+                      <span className="text-[11px] font-black text-[#004d33] bg-[#004d33]/5 px-2 py-0.5 rounded border border-[#004d33]/10">
+                        {score.toFixed(0)} / 5
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="text-[11px] font-black text-slate-300 uppercase">Beginner</span>
+                      <input
+                        type="range"
+                        min="1"
+                        max="5"
+                        step="1"
+                        value={score}
+                        onChange={e => setAnswers({ ...answers, section3: { ...answers.section3, [scoreKey]: parseInt(e.target.value) } })}
+                        className="flex-grow h-1.5 bg-slate-100 rounded-full appearance-none cursor-pointer accent-[#004d33]"
+                      />
+                      <span className="text-[11px] font-black text-[#004d33] uppercase">Mastery</span>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <span className="text-[11px] font-black text-slate-300 uppercase">Beginner</span>
-                    <input
-                      type="range"
-                      min="1"
-                      max="5"
-                      step="1"
-                      value={answers.section3[practice] || 3}
-                      onChange={e => setAnswers({ ...answers, section3: { ...answers.section3, [practice]: parseInt(e.target.value) } })}
-                      className="flex-grow h-1.5 bg-slate-100 rounded-full appearance-none cursor-pointer accent-[#004d33]"
-                    />
-                    <span className="text-[11px] font-black text-[#004d33] uppercase">Mastery</span>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
             {submission?.comments?.section3 && (
               <div className="mt-6 p-4 bg-amber-50 border border-amber-100 rounded-md flex gap-4 items-start shadow-sm">

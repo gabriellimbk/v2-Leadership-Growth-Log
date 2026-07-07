@@ -17,13 +17,17 @@ const DEFAULT_CONFIG: FormConfig = {
     enabled: true,
     title: "SECTION 2: WHAT LEADERS DO",
     description: "The table below shows the 5 Leadership Practices of The Student Leadership Challenge. In the table below, fill in what you think a student leader can do to bring out each of these Leadership Practices?",
-    columns: ["Model The Way", "Inspire A Shared Vision", "Challenge The Process", "Encourage The Heart", "Enable Others To Act"]
+    columns: ["Model The Way", "Inspire A Shared Vision", "Challenge The Process", "Encourage The Heart", "Enable Others To Act"],
+    headerRows: [
+      ["placeholder", "placeholder", "placeholder", "placeholder", "placeholder"],
+      ["placeholder", "placeholder", "placeholder", "placeholder", "placeholder"]
+    ]
   },
   section3: {
     enabled: true,
     title: "SECTION 3: WHERE AM I NOW?",
     description: "How frequently do you engage in behaviours and actions under each Leadership Practice? (1-Rarely/Seldom 2-Once in a While 3-Sometimes 4-Often 5-Very Frequently)",
-    practices: ["MODEL THE WAY", "INSPIRE A SHARED VISION", "CHALLENGE THE PROCESS", "ENCOURAGE THE HEART", "ENABLE OTHERS TO ACT"]
+    practices: ["Model The Way", "Inspire A Shared Vision", "Challenge The Process", "Encourage The Heart", "Enable Others To Act"]
   },
   section4: {
     enabled: true,
@@ -47,13 +51,26 @@ const DEFAULT_CONFIG: FormConfig = {
   }
 };
 
+function normalizeHeaderRows(columns: string[], headerRows?: string[][]): string[][] {
+  return [0, 1].map(rowIndex =>
+    columns.map((_, columnIndex) => headerRows?.[rowIndex]?.[columnIndex] ?? 'placeholder')
+  );
+}
+
 function normalizeConfig(config?: Partial<FormConfig> | null): FormConfig {
   const source = config ?? {};
+  const section2 = {
+    ...DEFAULT_CONFIG.section2,
+    ...source.section2,
+    enabled: source.section2?.enabled ?? true
+  };
+  section2.headerRows = normalizeHeaderRows(section2.columns, section2.headerRows);
+
   return {
     ...DEFAULT_CONFIG,
     ...source,
     section1: { ...DEFAULT_CONFIG.section1, ...source.section1, enabled: source.section1?.enabled ?? true },
-    section2: { ...DEFAULT_CONFIG.section2, ...source.section2, enabled: source.section2?.enabled ?? true },
+    section2,
     section3: { ...DEFAULT_CONFIG.section3, ...source.section3, enabled: source.section3?.enabled ?? true },
     section4: { ...DEFAULT_CONFIG.section4, ...source.section4, enabled: source.section4?.enabled ?? true },
     section5: { ...DEFAULT_CONFIG.section5, ...source.section5, enabled: source.section5?.enabled ?? true },

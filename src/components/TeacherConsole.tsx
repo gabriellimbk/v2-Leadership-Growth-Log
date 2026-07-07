@@ -23,6 +23,24 @@ function isSectionEnabled(section: { enabled?: boolean }) {
   return section.enabled !== false;
 }
 
+function getSection2HeaderRows(section2: FormConfig['section2']) {
+  return [0, 1].map(rowIndex =>
+    section2.columns.map((_, columnIndex) => section2.headerRows?.[rowIndex]?.[columnIndex] ?? 'placeholder')
+  );
+}
+
+function getSection2HeaderText(config: FormConfig['section2'], rowIndex: number, columnIndex: number) {
+  return config.headerRows?.[rowIndex]?.[columnIndex] || 'placeholder';
+}
+
+function getPracticeScoreKey(index: number) {
+  return `practice-${index}`;
+}
+
+function getPracticeScore(section3Answers: Submission['answers']['section3'], practice: string, index: number) {
+  return section3Answers[getPracticeScoreKey(index)] ?? section3Answers[practice] ?? 3;
+}
+
 type ConfirmAction =
   | { type: 'delete-one'; submission: Submission }
   | { type: 'delete-all'; teacher: string };
@@ -199,6 +217,12 @@ export default function TeacherConsole({ config, onConfigUpdate, teachers, mode 
         ...updates,
       },
     }));
+  };
+
+  const updateSection2HeaderRow = (rowIndex: number, columnIndex: number, value: string) => {
+    const headerRows = getSection2HeaderRows(editableConfig.section2);
+    headerRows[rowIndex][columnIndex] = value;
+    updateConfigSection('section2', { headerRows });
   };
 
   const handleDeleteOne = async (sub: Submission) => {
@@ -516,21 +540,32 @@ export default function TeacherConsole({ config, onConfigUpdate, teachers, mode 
                     <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
                       {editableConfig.section2.columns.map((c, idx) => (
                         <div key={idx} className="space-y-1">
-                          <label className="text-[8px] font-bold text-slate-400 uppercase">Practice {idx + 1}</label>
+                          <label className="text-[8px] font-bold text-slate-400 uppercase">Practice {idx + 1} row 1</label>
                           <input type="text" value={c} onChange={e => {
                             const newCols = [...editableConfig.section2.columns];
                             newCols[idx] = e.target.value;
-                            const newPractices = [...editableConfig.section3.practices];
-                            if (newPractices[idx] !== undefined) newPractices[idx] = e.target.value.toUpperCase();
-                            setEditableConfig({
-                              ...editableConfig,
-                              section2: { ...editableConfig.section2, columns: newCols },
-                              section3: { ...editableConfig.section3, practices: newPractices }
-                            });
+                            updateConfigSection('section2', { columns: newCols });
                           }} className="w-full p-2 bg-slate-50 border border-slate-200 rounded text-[10px] font-bold uppercase" />
                         </div>
                       ))}
                     </div>
+                    {[0, 1].map(rowIndex => (
+                      <div key={rowIndex} className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+                        {editableConfig.section2.columns.map((_, idx) => (
+                          <div key={idx} className="space-y-1">
+                            <label className="text-[8px] font-bold text-slate-400 uppercase">
+                              Practice {idx + 1} row {rowIndex + 2}
+                            </label>
+                            <input
+                              type="text"
+                              value={getSection2HeaderText(editableConfig.section2, rowIndex, idx)}
+                              onChange={e => updateSection2HeaderRow(rowIndex, idx, e.target.value)}
+                              className="w-full p-2 bg-slate-50 border border-slate-200 rounded text-[10px] font-normal normal-case"
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    ))}
                   </div>
 
                   {/* Section 3 */}
@@ -560,6 +595,23 @@ export default function TeacherConsole({ config, onConfigUpdate, teachers, mode 
                       <label className="text-[8px] font-bold text-slate-400 uppercase">Instructions shown to students</label>
                       <textarea value={editableConfig.section3.description} onChange={e => updateConfigSection('section3', { description: e.target.value })}
                         className="w-full p-2 bg-slate-50 border border-slate-200 rounded text-[11px] resize-none h-16 focus:bg-white outline-none" />
+                    </div>
+                    <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+                      {editableConfig.section3.practices.map((practice, idx) => (
+                        <div key={idx} className="space-y-1">
+                          <label className="text-[8px] font-bold text-slate-400 uppercase">Option {idx + 1}</label>
+                          <input
+                            type="text"
+                            value={practice}
+                            onChange={e => {
+                              const newPractices = [...editableConfig.section3.practices];
+                              newPractices[idx] = e.target.value;
+                              updateConfigSection('section3', { practices: newPractices });
+                            }}
+                            className="w-full p-2 bg-slate-50 border border-slate-200 rounded text-[10px] font-medium normal-case"
+                          />
+                        </div>
+                      ))}
                     </div>
                   </div>
 
@@ -743,7 +795,21 @@ export default function TeacherConsole({ config, onConfigUpdate, teachers, mode 
                       <div className="grid grid-cols-1 md:grid-cols-5 gap-0 border border-[#004d33]/20 rounded-md overflow-hidden">
                         {config.section2.columns.map((col, idx) => (
                           <div key={idx} className="flex flex-col border-r last:border-r-0 border-[#004d33]/20">
-                            <div className="bg-[#004d33] text-white p-2 text-center md:min-h-[18rem] flex items-center justify-center"><p className="text-[9px] font-black uppercase tracking-tight leading-relaxed break-words">{col}</p></div>
+                            <div className="bg-[#004d33] text-white text-center md:min-h-[18rem] grid grid-rows-3">
+                              <div className="p-2 flex items-center justify-center border-b border-white/15">
+                                <p className="text-[9px] font-black uppercase tracking-tight leading-relaxed break-words">{col}</p>
+                              </div>
+                              <div className="p-2 flex items-center justify-center border-b border-white/15">
+                                <p className="text-[9px] font-normal normal-case tracking-normal leading-relaxed break-words">
+                                  {getSection2HeaderText(config.section2, 0, idx)}
+                                </p>
+                              </div>
+                              <div className="p-2 flex items-center justify-center">
+                                <p className="text-[9px] font-normal normal-case tracking-normal leading-relaxed break-words">
+                                  {getSection2HeaderText(config.section2, 1, idx)}
+                                </p>
+                              </div>
+                            </div>
                             <div className="bg-white p-3 min-h-[100px]"><p className="text-[12px] font-bold leading-snug text-slate-800">{selectedSub.answers.section2[col] || '—'}</p></div>
                           </div>
                         ))}
@@ -757,17 +823,20 @@ export default function TeacherConsole({ config, onConfigUpdate, teachers, mode 
                       <h3 className="text-[14px] font-black text-slate-800 border-l-4 border-[#004d33] pl-3 mb-2 uppercase tracking-widest">{config.section3.title}</h3>
                       <p className="text-[12px] text-slate-400 font-bold mb-5 italic border-l-4 border-transparent px-3">{config.section3.description}</p>
                       <div className="space-y-4">
-                        {config.section3.practices.map(practice => (
-                          <div key={practice} className="flex items-center gap-3">
-                            <p className="text-[11px] font-bold text-slate-500 uppercase w-40 shrink-0 truncate">{practice}</p>
-                            <div className="flex-grow flex items-center gap-2">
-                              <div className="flex-grow h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                                <div className="h-full bg-amber-500" style={{ width: `${((selectedSub.answers.section3[practice] || 3) / 5) * 100}%` }} />
+                        {config.section3.practices.map((practice, idx) => {
+                          const score = getPracticeScore(selectedSub.answers.section3, practice, idx);
+                          return (
+                            <div key={getPracticeScoreKey(idx)} className="flex items-center gap-3">
+                              <p className="text-[11px] font-bold text-slate-500 w-40 shrink-0 truncate">{practice}</p>
+                              <div className="flex-grow flex items-center gap-2">
+                                <div className="flex-grow h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                                  <div className="h-full bg-amber-500" style={{ width: `${(score / 5) * 100}%` }} />
+                                </div>
+                                <span className="text-[12px] font-black text-amber-600 w-5">{score}</span>
                               </div>
-                              <span className="text-[12px] font-black text-amber-600 w-5">{selectedSub.answers.section3[practice] || 3}</span>
                             </div>
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     </div>
                     )}
@@ -963,8 +1032,20 @@ export default function TeacherConsole({ config, onConfigUpdate, teachers, mode 
                     <div className="grid grid-cols-1 md:grid-cols-5 gap-0 mb-4 border border-[#004d33]/20 rounded-md overflow-hidden">
                       {config.section2.columns.map((col, idx) => (
                         <div key={idx} className="flex flex-col border-r last:border-r-0 border-[#004d33]/20">
-                          <div className="bg-[#004d33] text-white p-2.5 text-center md:min-h-[18rem] flex items-center justify-center">
-                            <label className="text-[11px] font-black uppercase tracking-tight leading-relaxed break-words">{col}</label>
+                          <div className="bg-[#004d33] text-white text-center md:min-h-[18rem] grid grid-rows-3">
+                            <div className="p-2.5 flex items-center justify-center border-b border-white/15">
+                              <label className="text-[11px] font-black uppercase tracking-tight leading-relaxed break-words">{col}</label>
+                            </div>
+                            <div className="p-2.5 flex items-center justify-center border-b border-white/15">
+                              <p className="text-[11px] font-normal normal-case tracking-normal leading-relaxed break-words">
+                                {getSection2HeaderText(config.section2, 0, idx)}
+                              </p>
+                            </div>
+                            <div className="p-2.5 flex items-center justify-center">
+                              <p className="text-[11px] font-normal normal-case tracking-normal leading-relaxed break-words">
+                                {getSection2HeaderText(config.section2, 1, idx)}
+                              </p>
+                            </div>
                           </div>
                           <textarea disabled
                             className="text-[11px] bg-white text-[#1a1a1a] p-3 h-40 w-full resize-none outline-none leading-relaxed font-bold placeholder:text-slate-200 cursor-default"
@@ -986,10 +1067,10 @@ export default function TeacherConsole({ config, onConfigUpdate, teachers, mode 
                       {config.section3.description}
                     </p>
                     <div className="space-y-6">
-                      {config.section3.practices.map(practice => (
-                        <div key={practice} className="space-y-2">
+                      {config.section3.practices.map((practice, idx) => (
+                        <div key={getPracticeScoreKey(idx)} className="space-y-2">
                           <div className="flex justify-between items-center px-1">
-                            <label className="text-[13px] font-black text-slate-500 uppercase tracking-tight">{practice}</label>
+                            <label className="text-[13px] font-black text-slate-500 tracking-tight">{practice}</label>
                             <span className="text-[11px] font-black text-[#004d33] bg-[#004d33]/5 px-2 py-0.5 rounded border border-[#004d33]/10">— / 5</span>
                           </div>
                           <div className="flex items-center gap-3">
