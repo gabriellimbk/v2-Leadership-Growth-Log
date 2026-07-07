@@ -792,23 +792,21 @@ export default function TeacherConsole({ config, onConfigUpdate, teachers, mode 
                     <div className="bg-white border border-slate-200 rounded-md p-5 shadow-sm">
                       <h3 className="text-[14px] font-black text-slate-800 border-l-4 border-[#004d33] pl-3 mb-2 uppercase tracking-widest">{config.section2.title}</h3>
                       <p className="text-[12px] text-slate-400 font-bold mb-5 italic border-l-4 border-transparent px-3">{config.section2.description}</p>
-                      <div className="grid grid-cols-1 md:grid-cols-5 gap-0 border border-[#004d33]/20 rounded-md overflow-hidden">
+                      <div className="grid grid-cols-1 md:grid-cols-5 md:[grid-template-rows:auto_auto_auto_auto] gap-0 border border-[#004d33]/20 rounded-md overflow-hidden">
                         {config.section2.columns.map((col, idx) => (
-                          <div key={idx} className="flex flex-col border-r last:border-r-0 border-[#004d33]/20">
-                            <div className="bg-[#004d33] text-white text-center grid grid-rows-[6rem_12rem_6rem]">
-                              <div className="p-2 flex items-center justify-center border-b border-white/15">
-                                <p className="text-[9px] font-black uppercase tracking-tight leading-relaxed break-words">{col}</p>
-                              </div>
-                              <div className="p-2 flex items-center justify-center border-b border-white/15">
-                                <p className="text-[9px] font-normal normal-case tracking-normal leading-relaxed break-words">
-                                  {getSection2HeaderText(config.section2, 0, idx)}
-                                </p>
-                              </div>
-                              <div className="p-2 flex items-center justify-center">
-                                <p className="text-[9px] font-normal normal-case tracking-normal leading-relaxed break-words">
-                                  {getSection2HeaderText(config.section2, 1, idx)}
-                                </p>
-                              </div>
+                          <div key={idx} className="flex flex-col md:grid md:[grid-template-rows:subgrid] md:row-span-4 border-r last:border-r-0 border-[#004d33]/20">
+                            <div className="bg-[#004d33] text-white text-center p-2 flex items-center justify-center border-b border-white/15">
+                              <p className="text-[9px] font-black uppercase tracking-tight leading-relaxed break-words">{col}</p>
+                            </div>
+                            <div className="bg-[#004d33] text-white text-center p-2 flex items-center justify-center border-b border-white/15">
+                              <p className="text-[9px] font-normal normal-case tracking-normal leading-relaxed break-words">
+                                {getSection2HeaderText(config.section2, 0, idx)}
+                              </p>
+                            </div>
+                            <div className="bg-[#004d33] text-white text-center p-2 flex items-center justify-center">
+                              <p className="text-[9px] font-normal normal-case tracking-normal leading-relaxed break-words">
+                                {getSection2HeaderText(config.section2, 1, idx)}
+                              </p>
                             </div>
                             <div className="bg-white p-3 min-h-[100px]"><p className="text-[12px] font-bold leading-snug text-slate-800">{selectedSub.answers.section2[col] || '—'}</p></div>
                           </div>
@@ -1029,23 +1027,21 @@ export default function TeacherConsole({ config, onConfigUpdate, teachers, mode 
                     <p className="text-[12px] text-slate-400 font-bold mb-6 italic leading-snug px-3 border-l-4 border-transparent">
                       {config.section2.description}
                     </p>
-                    <div className="grid grid-cols-1 md:grid-cols-5 gap-0 mb-4 border border-[#004d33]/20 rounded-md overflow-hidden">
+                    <div className="grid grid-cols-1 md:grid-cols-5 md:[grid-template-rows:auto_auto_auto_auto] gap-0 mb-4 border border-[#004d33]/20 rounded-md overflow-hidden">
                       {config.section2.columns.map((col, idx) => (
-                        <div key={idx} className="flex flex-col border-r last:border-r-0 border-[#004d33]/20">
-                          <div className="bg-[#004d33] text-white text-center grid grid-rows-[6rem_12rem_6rem]">
-                            <div className="p-2.5 flex items-center justify-center border-b border-white/15">
-                              <label className="text-[11px] font-black uppercase tracking-tight leading-relaxed break-words">{col}</label>
-                            </div>
-                            <div className="p-2.5 flex items-center justify-center border-b border-white/15">
-                              <p className="text-[11px] font-normal normal-case tracking-normal leading-relaxed break-words">
-                                {getSection2HeaderText(config.section2, 0, idx)}
-                              </p>
-                            </div>
-                            <div className="p-2.5 flex items-center justify-center">
-                              <p className="text-[11px] font-normal normal-case tracking-normal leading-relaxed break-words">
-                                {getSection2HeaderText(config.section2, 1, idx)}
-                              </p>
-                            </div>
+                        <div key={idx} className="flex flex-col md:grid md:[grid-template-rows:subgrid] md:row-span-4 border-r last:border-r-0 border-[#004d33]/20">
+                          <div className="bg-[#004d33] text-white text-center p-2.5 flex items-center justify-center border-b border-white/15">
+                            <label className="text-[11px] font-black uppercase tracking-tight leading-relaxed break-words">{col}</label>
+                          </div>
+                          <div className="bg-[#004d33] text-white text-center p-2.5 flex items-center justify-center border-b border-white/15">
+                            <p className="text-[11px] font-normal normal-case tracking-normal leading-relaxed break-words">
+                              {getSection2HeaderText(config.section2, 0, idx)}
+                            </p>
+                          </div>
+                          <div className="bg-[#004d33] text-white text-center p-2.5 flex items-center justify-center">
+                            <p className="text-[11px] font-normal normal-case tracking-normal leading-relaxed break-words">
+                              {getSection2HeaderText(config.section2, 1, idx)}
+                            </p>
                           </div>
                           <textarea disabled
                             className="text-[11px] bg-white text-[#1a1a1a] p-3 h-40 w-full resize-none outline-none leading-relaxed font-bold placeholder:text-slate-200 cursor-default"
