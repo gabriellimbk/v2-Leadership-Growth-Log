@@ -795,7 +795,7 @@ export default function TeacherConsole({ config, onConfigUpdate, teachers, mode 
                       <div className="grid grid-cols-1 md:grid-cols-5 gap-0 border border-[#004d33]/20 rounded-md overflow-hidden">
                         {config.section2.columns.map((col, idx) => (
                           <div key={idx} className="flex flex-col border-r last:border-r-0 border-[#004d33]/20">
-                            <div className="bg-[#004d33] text-white text-center md:min-h-[18rem] grid grid-rows-3">
+                            <div className="bg-[#004d33] text-white text-center grid grid-rows-[6rem_12rem_6rem]">
                               <div className="p-2 flex items-center justify-center border-b border-white/15">
                                 <p className="text-[9px] font-black uppercase tracking-tight leading-relaxed break-words">{col}</p>
                               </div>
@@ -1032,7 +1032,7 @@ export default function TeacherConsole({ config, onConfigUpdate, teachers, mode 
                     <div className="grid grid-cols-1 md:grid-cols-5 gap-0 mb-4 border border-[#004d33]/20 rounded-md overflow-hidden">
                       {config.section2.columns.map((col, idx) => (
                         <div key={idx} className="flex flex-col border-r last:border-r-0 border-[#004d33]/20">
-                          <div className="bg-[#004d33] text-white text-center md:min-h-[18rem] grid grid-rows-3">
+                          <div className="bg-[#004d33] text-white text-center grid grid-rows-[6rem_12rem_6rem]">
                             <div className="p-2.5 flex items-center justify-center border-b border-white/15">
                               <label className="text-[11px] font-black uppercase tracking-tight leading-relaxed break-words">{col}</label>
                             </div>
