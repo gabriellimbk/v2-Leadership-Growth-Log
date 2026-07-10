@@ -5,6 +5,7 @@ export interface FormConfig {
     enabled?: boolean;
     title: string;
     description: string;
+    question: string;
     columns: string[];
   };
   section2: {

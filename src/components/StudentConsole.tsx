@@ -243,7 +243,7 @@ export default function StudentConsole({ config, teachers }: StudentConsoleProps
             </div>
             <div className="space-y-2 px-3">
               <label htmlFor="section1-placeholder-answer" className="block text-[11px] font-black text-slate-700">
-                Placeholder question
+                {config.section1.question}
               </label>
               <textarea
                 id="section1-placeholder-answer"

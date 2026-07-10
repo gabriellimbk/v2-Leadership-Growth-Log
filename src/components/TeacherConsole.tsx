@@ -497,6 +497,15 @@ export default function TeacherConsole({ config, onConfigUpdate, teachers, mode 
                       <textarea value={editableConfig.section1.description} onChange={e => updateConfigSection('section1', { description: e.target.value })}
                         className="w-full p-2 bg-slate-50 border border-slate-200 rounded text-[11px] resize-none h-16 focus:bg-white outline-none" />
                     </div>
+                    <div className="space-y-1">
+                      <label className="text-[8px] font-bold text-slate-400 uppercase">Question shown below the strengths table</label>
+                      <input
+                        type="text"
+                        value={editableConfig.section1.question}
+                        onChange={e => updateConfigSection('section1', { question: e.target.value })}
+                        className="w-full p-2 bg-slate-50 border border-slate-200 rounded text-[10px] font-bold"
+                      />
+                    </div>
                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                       {editableConfig.section1.columns.map((c, idx) => (
                         <div key={idx} className="space-y-1">
@@ -787,7 +796,7 @@ export default function TeacherConsole({ config, onConfigUpdate, teachers, mode 
                         ))}
                       </div>
                       <div className="mt-4 px-3">
-                        <p className="text-[11px] font-black text-slate-700 mb-2">Placeholder question</p>
+                        <p className="text-[11px] font-black text-slate-700 mb-2">{config.section1.question}</p>
                         <div className="min-h-20 rounded-md border border-slate-200 bg-white p-3">
                           <p className="text-[12px] font-bold leading-snug text-slate-800">
                             {selectedSub.answers.section1[SECTION1_PLACEHOLDER_QUESTION_KEY] || '—'}
@@ -1026,7 +1035,7 @@ export default function TeacherConsole({ config, onConfigUpdate, teachers, mode 
                       ))}
                     </div>
                     <div className="space-y-2 px-3">
-                      <label className="block text-[11px] font-black text-slate-700">Placeholder question</label>
+                      <label className="block text-[11px] font-black text-slate-700">{config.section1.question}</label>
                       <textarea disabled
                         className="text-[11px] bg-white text-[#004d33] p-3 min-h-24 w-full resize-none rounded-md border border-slate-200 outline-none leading-relaxed font-bold placeholder:text-slate-300 cursor-default"
                         placeholder="Type your answer..."

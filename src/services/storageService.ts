@@ -11,6 +11,7 @@ const DEFAULT_CONFIG: FormConfig = {
     enabled: true,
     title: "SECTION 1: WHO I AM",
     description: "Start with your report. Under each domain, insert in your top 5 strengths where relevant.",
+    question: "Placeholder question",
     columns: ["Executing", "Influence", "Relationship Building", "Strategic Thinking"]
   },
   section2: {
