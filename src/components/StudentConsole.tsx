@@ -25,6 +25,8 @@ function getPracticeScoreKey(index: number) {
   return `practice-${index}`;
 }
 
+const SECTION1_PLACEHOLDER_QUESTION_KEY = '__placeholder-question';
+
 function getPracticeScore(section3Answers: Submission['answers']['section3'], practice: string, index: number) {
   return section3Answers[getPracticeScoreKey(index)] ?? section3Answers[practice] ?? 3;
 }
@@ -238,6 +240,24 @@ export default function StudentConsole({ config, teachers }: StudentConsoleProps
                   />
                 </div>
               ))}
+            </div>
+            <div className="space-y-2 px-3">
+              <label htmlFor="section1-placeholder-answer" className="block text-[11px] font-black text-slate-700">
+                Placeholder question
+              </label>
+              <textarea
+                id="section1-placeholder-answer"
+                value={answers.section1[SECTION1_PLACEHOLDER_QUESTION_KEY] || ''}
+                onChange={e => setAnswers({
+                  ...answers,
+                  section1: {
+                    ...answers.section1,
+                    [SECTION1_PLACEHOLDER_QUESTION_KEY]: e.target.value
+                  }
+                })}
+                className="text-[11px] bg-white text-[#004d33] p-3 min-h-24 w-full resize-y rounded-md border border-slate-200 transition-all outline-none leading-relaxed font-bold placeholder:text-slate-300 focus:border-[#004d33] focus:ring-1 focus:ring-[#004d33]/20"
+                placeholder="Type your answer..."
+              />
             </div>
             {submission?.comments?.section1 && (
               <div className="mt-4 p-4 bg-amber-50 border border-amber-100 rounded-md flex gap-4 items-start shadow-sm">

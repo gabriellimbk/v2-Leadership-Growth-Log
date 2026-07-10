@@ -19,6 +19,8 @@ interface TeacherConsoleProps {
 
 type EditableSectionKey = 'section1' | 'section2' | 'section3' | 'section4' | 'section5' | 'section6';
 
+const SECTION1_PLACEHOLDER_QUESTION_KEY = '__placeholder-question';
+
 function isSectionEnabled(section: { enabled?: boolean }) {
   return section.enabled !== false;
 }
@@ -784,6 +786,14 @@ export default function TeacherConsole({ config, onConfigUpdate, teachers, mode 
                           </div>
                         ))}
                       </div>
+                      <div className="mt-4 px-3">
+                        <p className="text-[11px] font-black text-slate-700 mb-2">Placeholder question</p>
+                        <div className="min-h-20 rounded-md border border-slate-200 bg-white p-3">
+                          <p className="text-[12px] font-bold leading-snug text-slate-800">
+                            {selectedSub.answers.section1[SECTION1_PLACEHOLDER_QUESTION_KEY] || '—'}
+                          </p>
+                        </div>
+                      </div>
                     </div>
                     )}
 
@@ -1014,6 +1024,13 @@ export default function TeacherConsole({ config, onConfigUpdate, teachers, mode 
                           />
                         </div>
                       ))}
+                    </div>
+                    <div className="space-y-2 px-3">
+                      <label className="block text-[11px] font-black text-slate-700">Placeholder question</label>
+                      <textarea disabled
+                        className="text-[11px] bg-white text-[#004d33] p-3 min-h-24 w-full resize-none rounded-md border border-slate-200 outline-none leading-relaxed font-bold placeholder:text-slate-300 cursor-default"
+                        placeholder="Type your answer..."
+                      />
                     </div>
                   </div>
                   )}
