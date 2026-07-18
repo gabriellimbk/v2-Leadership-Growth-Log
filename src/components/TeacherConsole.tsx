@@ -21,6 +21,10 @@ type EditableSectionKey = 'section1' | 'section2' | 'section3' | 'section4' | 's
 
 const SECTION1_PLACEHOLDER_QUESTION_KEY = '__placeholder-question';
 
+function getSection1TableAnswerKey(rowIndex: number, columnIndex: number) {
+  return `__table-${rowIndex}-${columnIndex}`;
+}
+
 function isSectionEnabled(section: { enabled?: boolean }) {
   return section.enabled !== false;
 }
@@ -624,6 +628,26 @@ export default function TeacherConsole({ config, onConfigUpdate, teachers, mode 
                         </div>
                       ))}
                     </div>
+                    <div className="space-y-1">
+                      <label className="text-[8px] font-bold text-slate-400 uppercase">Question shown above the 3 × 3 table</label>
+                      <textarea
+                        value={editableConfig.section1.tableQuestion}
+                        onChange={e => updateConfigSection('section1', { tableQuestion: e.target.value })}
+                        className="w-full p-2 bg-slate-50 border border-slate-200 rounded text-[11px] resize-none h-16 focus:bg-white outline-none"
+                      />
+                    </div>
+                    <div className="grid grid-cols-3 gap-4">
+                      {editableConfig.section1.tableHeaders.map((header, idx) => (
+                        <div key={idx} className="space-y-1">
+                          <label className="text-[8px] font-bold text-slate-400 uppercase">Table header {idx + 1}</label>
+                          <input type="text" value={header} onChange={e => {
+                            const tableHeaders = [...editableConfig.section1.tableHeaders];
+                            tableHeaders[idx] = e.target.value;
+                            updateConfigSection('section1', { tableHeaders });
+                          }} className="w-full p-2 bg-slate-50 border border-slate-200 rounded text-[10px] font-bold" />
+                        </div>
+                      ))}
+                    </div>
                   </div>
 
                   {/* Section 4 */}
@@ -801,6 +825,21 @@ export default function TeacherConsole({ config, onConfigUpdate, teachers, mode 
                           <p className="text-[12px] font-bold leading-snug text-slate-800">
                             {selectedSub.answers.section1[SECTION1_PLACEHOLDER_QUESTION_KEY] || '—'}
                           </p>
+                        </div>
+                      </div>
+                      <div className="mt-6 px-3">
+                        <p className="text-[12px] text-slate-400 font-bold mb-4 italic leading-snug">{config.section1.tableQuestion}</p>
+                        <div className="grid grid-cols-3 border border-[#004d33]/20 rounded-md overflow-hidden">
+                          {config.section1.tableHeaders.map((header, columnIndex) => (
+                            <div key={`header-${columnIndex}`} className="bg-[#004d33] text-white p-2.5 text-center border-r last:border-r-0 border-white/15">
+                              <span className="text-[10px] font-black uppercase tracking-widest">{header}</span>
+                            </div>
+                          ))}
+                          {[0, 1].flatMap(rowIndex => config.section1.tableHeaders.map((_, columnIndex) => (
+                            <div key={`${rowIndex}-${columnIndex}`} className="bg-white p-3 min-h-[80px] border-t border-r border-[#004d33]/20 [&:nth-child(3n)]:border-r-0">
+                              <p className="text-[12px] font-bold leading-snug text-slate-800">{selectedSub.answers.section1[getSection1TableAnswerKey(rowIndex, columnIndex)] || '—'}</p>
+                            </div>
+                          )))}
                         </div>
                       </div>
                     </div>
@@ -1040,6 +1079,22 @@ export default function TeacherConsole({ config, onConfigUpdate, teachers, mode 
                         className="text-[11px] bg-white text-[#004d33] p-3 min-h-24 w-full resize-none rounded-md border border-slate-200 outline-none leading-relaxed font-bold placeholder:text-slate-300 cursor-default"
                         placeholder="Type your answer..."
                       />
+                    </div>
+                    <div className="mt-6 px-3">
+                      <p className="text-[12px] text-slate-400 font-bold mb-4 italic leading-snug">{config.section1.tableQuestion}</p>
+                      <div className="grid grid-cols-3 border border-[#004d33]/20 rounded-md overflow-hidden">
+                        {config.section1.tableHeaders.map((header, columnIndex) => (
+                          <div key={`header-${columnIndex}`} className="bg-[#004d33] text-white p-2.5 text-center border-r last:border-r-0 border-white/15">
+                            <span className="text-[11px] font-black uppercase tracking-widest">{header}</span>
+                          </div>
+                        ))}
+                        {[0, 1].flatMap(rowIndex => config.section1.tableHeaders.map((_, columnIndex) => (
+                          <textarea key={`${rowIndex}-${columnIndex}`} disabled
+                            className="text-[11px] bg-white p-3 h-24 w-full resize-none outline-none border-t border-r border-[#004d33]/20 [&:nth-child(3n)]:border-r-0 cursor-default"
+                            placeholder="Type your answer..."
+                          />
+                        )))}
+                      </div>
                     </div>
                   </div>
                   )}

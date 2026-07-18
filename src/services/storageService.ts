@@ -12,7 +12,9 @@ const DEFAULT_CONFIG: FormConfig = {
     title: "SECTION 1: WHO I AM",
     description: "Start with your report. Under each domain, insert in your top 5 strengths where relevant.",
     question: "Placeholder question",
-    columns: ["Executing", "Influence", "Relationship Building", "Strategic Thinking"]
+    columns: ["Executing", "Influence", "Relationship Building", "Strategic Thinking"],
+    tableQuestion: "Placeholder question",
+    tableHeaders: ["Placeholder", "Placeholder", "Placeholder"]
   },
   section2: {
     enabled: true,
@@ -70,7 +72,12 @@ function normalizeConfig(config?: Partial<FormConfig> | null): FormConfig {
   return {
     ...DEFAULT_CONFIG,
     ...source,
-    section1: { ...DEFAULT_CONFIG.section1, ...source.section1, enabled: source.section1?.enabled ?? true },
+    section1: {
+      ...DEFAULT_CONFIG.section1,
+      ...source.section1,
+      enabled: source.section1?.enabled ?? true,
+      tableHeaders: [0, 1, 2].map(index => source.section1?.tableHeaders?.[index] ?? DEFAULT_CONFIG.section1.tableHeaders[index])
+    },
     section2,
     section3: { ...DEFAULT_CONFIG.section3, ...source.section3, enabled: source.section3?.enabled ?? true },
     section4: { ...DEFAULT_CONFIG.section4, ...source.section4, enabled: source.section4?.enabled ?? true },

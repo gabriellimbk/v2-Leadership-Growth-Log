@@ -7,6 +7,8 @@ export interface FormConfig {
     description: string;
     question: string;
     columns: string[];
+    tableQuestion: string;
+    tableHeaders: string[];
   };
   section2: {
     enabled?: boolean;

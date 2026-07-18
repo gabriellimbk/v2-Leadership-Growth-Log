@@ -27,6 +27,10 @@ function getPracticeScoreKey(index: number) {
 
 const SECTION1_PLACEHOLDER_QUESTION_KEY = '__placeholder-question';
 
+function getSection1TableAnswerKey(rowIndex: number, columnIndex: number) {
+  return `__table-${rowIndex}-${columnIndex}`;
+}
+
 function getPracticeScore(section3Answers: Submission['answers']['section3'], practice: string, index: number) {
   return section3Answers[getPracticeScoreKey(index)] ?? section3Answers[practice] ?? 3;
 }
@@ -258,6 +262,30 @@ export default function StudentConsole({ config, teachers }: StudentConsoleProps
                 className="text-[11px] bg-white text-[#004d33] p-3 min-h-24 w-full resize-y rounded-md border border-slate-200 transition-all outline-none leading-relaxed font-bold placeholder:text-slate-300 focus:border-[#004d33] focus:ring-1 focus:ring-[#004d33]/20"
                 placeholder="Type your answer..."
               />
+            </div>
+            <div className="mt-6 px-3">
+              <p className="text-[10px] text-slate-400 font-bold mb-4 italic leading-snug">
+                {config.section1.tableQuestion}
+              </p>
+              <div className="grid grid-cols-3 border border-[#004d33]/20 rounded-md overflow-hidden">
+                {config.section1.tableHeaders.map((header, columnIndex) => (
+                  <div key={`header-${columnIndex}`} className="bg-[#004d33] text-white p-2.5 text-center border-r last:border-r-0 border-white/15">
+                    <span className="text-[11px] font-black uppercase tracking-widest">{header}</span>
+                  </div>
+                ))}
+                {[0, 1].flatMap(rowIndex => config.section1.tableHeaders.map((_, columnIndex) => {
+                  const answerKey = getSection1TableAnswerKey(rowIndex, columnIndex);
+                  return (
+                    <textarea
+                      key={answerKey}
+                      value={answers.section1[answerKey] || ''}
+                      onChange={e => setAnswers({ ...answers, section1: { ...answers.section1, [answerKey]: e.target.value } })}
+                      className="text-[11px] bg-white text-[#004d33] p-3 h-24 w-full resize-none outline-none leading-relaxed font-bold border-t border-r border-[#004d33]/20 [&:nth-child(3n)]:border-r-0 placeholder:text-slate-300"
+                      placeholder="Type your answer..."
+                    />
+                  );
+                }))}
+              </div>
             </div>
             {submission?.comments?.section1 && (
               <div className="mt-4 p-4 bg-amber-50 border border-amber-100 rounded-md flex gap-4 items-start shadow-sm">
