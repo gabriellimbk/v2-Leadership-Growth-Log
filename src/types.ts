@@ -9,6 +9,7 @@ export interface FormConfig {
     columns: string[];
     tableQuestion: string;
     tableHeaders: string[];
+    tableInputPlaceholders: string[][];
   };
   section2: {
     enabled?: boolean;

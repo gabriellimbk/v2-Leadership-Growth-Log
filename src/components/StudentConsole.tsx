@@ -246,7 +246,7 @@ export default function StudentConsole({ config, teachers }: StudentConsoleProps
               ))}
             </div>
             <div className="space-y-2 px-3">
-              <label htmlFor="section1-placeholder-answer" className="block text-[11px] font-black text-slate-700">
+              <label htmlFor="section1-placeholder-answer" className="block text-[10px] text-slate-400 font-bold italic leading-snug">
                 {config.section1.question}
               </label>
               <textarea
@@ -281,7 +281,7 @@ export default function StudentConsole({ config, teachers }: StudentConsoleProps
                       value={answers.section1[answerKey] || ''}
                       onChange={e => setAnswers({ ...answers, section1: { ...answers.section1, [answerKey]: e.target.value } })}
                       className="text-[11px] bg-white text-[#004d33] p-3 h-24 w-full resize-none outline-none leading-relaxed font-bold border-t border-r border-[#004d33]/20 [&:nth-child(3n)]:border-r-0 placeholder:text-slate-300"
-                      placeholder="Type your answer..."
+                      placeholder={config.section1.tableInputPlaceholders[rowIndex][columnIndex]}
                     />
                   );
                 }))}

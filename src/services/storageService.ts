@@ -14,7 +14,11 @@ const DEFAULT_CONFIG: FormConfig = {
     question: "Placeholder question",
     columns: ["Executing", "Influence", "Relationship Building", "Strategic Thinking"],
     tableQuestion: "Placeholder question",
-    tableHeaders: ["Placeholder", "Placeholder", "Placeholder"]
+    tableHeaders: ["Placeholder", "Placeholder", "Placeholder"],
+    tableInputPlaceholders: [
+      ["Type your answer...", "Type your answer...", "Type your answer..."],
+      ["Type your answer...", "Type your answer...", "Type your answer..."]
+    ]
   },
   section2: {
     enabled: true,
@@ -76,7 +80,13 @@ function normalizeConfig(config?: Partial<FormConfig> | null): FormConfig {
       ...DEFAULT_CONFIG.section1,
       ...source.section1,
       enabled: source.section1?.enabled ?? true,
-      tableHeaders: [0, 1, 2].map(index => source.section1?.tableHeaders?.[index] ?? DEFAULT_CONFIG.section1.tableHeaders[index])
+      tableHeaders: [0, 1, 2].map(index => source.section1?.tableHeaders?.[index] ?? DEFAULT_CONFIG.section1.tableHeaders[index]),
+      tableInputPlaceholders: [0, 1].map(rowIndex =>
+        [0, 1, 2].map(columnIndex =>
+          source.section1?.tableInputPlaceholders?.[rowIndex]?.[columnIndex]
+          ?? DEFAULT_CONFIG.section1.tableInputPlaceholders[rowIndex][columnIndex]
+        )
+      )
     },
     section2,
     section3: { ...DEFAULT_CONFIG.section3, ...source.section3, enabled: source.section3?.enabled ?? true },
