@@ -2,7 +2,7 @@ import { supabase } from '../supabase';
 import { FormConfig, Submission, TeacherEntry } from '../types';
 
 const SUBMISSIONS_TABLE = 'V2-LEADERSHIP-PROGRAMME-GROWTH-LOG';
-const TEACHERS_TABLE = 'teachers';
+const TEACHERS_TABLE = 'v2_teachers';
 
 const DEFAULT_CONFIG: FormConfig = {
   id: 'default',

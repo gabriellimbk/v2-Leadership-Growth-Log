@@ -34,17 +34,17 @@ CREATE TABLE IF NOT EXISTS public.form_config (
 );
 
 -- Teacher directory: editable by admins from the Admin Console.
-CREATE TABLE IF NOT EXISTS public.teachers (
+CREATE TABLE IF NOT EXISTS public.v2_teachers (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name TEXT NOT NULL,
   email TEXT NOT NULL,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
-CREATE UNIQUE INDEX IF NOT EXISTS teachers_email_idx
-  ON public.teachers (LOWER(email));
+CREATE UNIQUE INDEX IF NOT EXISTS v2_teachers_email_idx
+  ON public.v2_teachers (LOWER(email));
 
-INSERT INTO public.teachers (name, email)
+INSERT INTO public.v2_teachers (name, email)
 SELECT v.name, v.email
 FROM (VALUES
   ('Mr Ridzuan',        'ridzuan@ri.edu.sg'),
@@ -64,13 +64,13 @@ FROM (VALUES
   ('Mr Lee Chee Keong', 'cheekeong.lee@ri.edu.sg')
 ) AS v(name, email)
 WHERE NOT EXISTS (
-  SELECT 1 FROM public.teachers t WHERE LOWER(t.email) = LOWER(v.email)
+  SELECT 1 FROM public.v2_teachers t WHERE LOWER(t.email) = LOWER(v.email)
 );
 
 -- Row Level Security.
 ALTER TABLE public."V2-LEADERSHIP-PROGRAMME-GROWTH-LOG" ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.form_config ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.teachers ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.v2_teachers ENABLE ROW LEVEL SECURITY;
 
 DO $$
 BEGIN
@@ -143,25 +143,47 @@ BEGIN
   IF NOT EXISTS (
     SELECT 1 FROM pg_policies
     WHERE schemaname = 'public'
-      AND tablename = 'teachers'
-      AND policyname = 'teachers_read_all'
+      AND tablename = 'v2_teachers'
+      AND policyname = 'v2_teachers_read'
   ) THEN
-    CREATE POLICY "teachers_read_all"
-      ON public.teachers
-      FOR SELECT USING (true);
+    CREATE POLICY "v2_teachers_read"
+      ON public.v2_teachers
+      FOR SELECT TO anon, authenticated USING (true);
   END IF;
 
   IF NOT EXISTS (
     SELECT 1 FROM pg_policies
     WHERE schemaname = 'public'
-      AND tablename = 'teachers'
-      AND policyname = 'teachers_write_auth'
+      AND tablename = 'v2_teachers'
+      AND policyname = 'v2_teachers_write_admin'
   ) THEN
-    CREATE POLICY "teachers_write_auth"
-      ON public.teachers
-      FOR ALL USING (auth.role() = 'authenticated');
+    CREATE POLICY "v2_teachers_write_admin"
+      ON public.v2_teachers
+      FOR ALL TO authenticated
+      USING (
+        LOWER((SELECT auth.jwt() ->> 'email')) = ANY (ARRAY[
+          'gabriel.lim@ri.edu.sg',
+          'janissa.soh@ri.edu.sg',
+          'cheekeong.lee@ri.edu.sg',
+          'jialin.ma@ri.edu.sg',
+          'kuangwen.chan@ri.edu.sg'
+        ])
+      )
+      WITH CHECK (
+        LOWER((SELECT auth.jwt() ->> 'email')) = ANY (ARRAY[
+          'gabriel.lim@ri.edu.sg',
+          'janissa.soh@ri.edu.sg',
+          'cheekeong.lee@ri.edu.sg',
+          'jialin.ma@ri.edu.sg',
+          'kuangwen.chan@ri.edu.sg'
+        ])
+      );
   END IF;
 END $$;
+
+REVOKE ALL ON public.v2_teachers FROM anon, authenticated;
+GRANT SELECT ON public.v2_teachers TO anon, authenticated;
+GRANT INSERT, UPDATE, DELETE ON public.v2_teachers TO authenticated;
 
 -- Teachers must exist before they can request an OTP login:
 -- Supabase Dashboard -> Authentication -> Users -> Invite user.
