@@ -3,6 +3,7 @@ import { FormConfig, Submission, TeacherEntry } from '../types';
 
 const SUBMISSIONS_TABLE = 'V2-LEADERSHIP-PROGRAMME-GROWTH-LOG';
 const TEACHERS_TABLE = 'v2_teachers';
+const FORM_CONFIG_TABLE = 'v2_form_config';
 
 const DEFAULT_CONFIG: FormConfig = {
   id: 'default',
@@ -124,7 +125,7 @@ function rowToSubmission(row: any): Submission {
 export const storageService = {
   getConfig: async (): Promise<FormConfig> => {
     const { data } = await supabase
-      .from('form_config')
+      .from(FORM_CONFIG_TABLE)
       .select('config')
       .eq('id', 'default')
       .maybeSingle();
@@ -132,7 +133,7 @@ export const storageService = {
   },
 
   saveConfig: async (config: FormConfig): Promise<void> => {
-    await supabase.from('form_config').upsert({
+    await supabase.from(FORM_CONFIG_TABLE).upsert({
       id: 'default',
       config: normalizeConfig(config),
       updated_at: new Date().toISOString()

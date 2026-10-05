@@ -27,7 +27,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS v2_leadership_growth_log_student_uid_idx
   ON public."V2-LEADERSHIP-PROGRAMME-GROWTH-LOG"(student_uid);
 
 -- Form configuration: one row, editable by teachers.
-CREATE TABLE IF NOT EXISTS public.form_config (
+CREATE TABLE IF NOT EXISTS public.v2_form_config (
   id TEXT PRIMARY KEY DEFAULT 'default',
   config JSONB NOT NULL,
   updated_at TIMESTAMPTZ DEFAULT NOW()
@@ -69,7 +69,7 @@ WHERE NOT EXISTS (
 
 -- Row Level Security.
 ALTER TABLE public."V2-LEADERSHIP-PROGRAMME-GROWTH-LOG" ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.form_config ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.v2_form_config ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.v2_teachers ENABLE ROW LEVEL SECURITY;
 
 DO $$
@@ -121,23 +121,41 @@ BEGIN
   IF NOT EXISTS (
     SELECT 1 FROM pg_policies
     WHERE schemaname = 'public'
-      AND tablename = 'form_config'
-      AND policyname = 'config_read_all'
+      AND tablename = 'v2_form_config'
+      AND policyname = 'v2_form_config_read'
   ) THEN
-    CREATE POLICY "config_read_all"
-      ON public.form_config
-      FOR SELECT USING (true);
+    CREATE POLICY "v2_form_config_read"
+      ON public.v2_form_config
+      FOR SELECT TO anon, authenticated USING (true);
   END IF;
 
   IF NOT EXISTS (
     SELECT 1 FROM pg_policies
     WHERE schemaname = 'public'
-      AND tablename = 'form_config'
-      AND policyname = 'config_write_auth'
+      AND tablename = 'v2_form_config'
+      AND policyname = 'v2_form_config_write_admin'
   ) THEN
-    CREATE POLICY "config_write_auth"
-      ON public.form_config
-      FOR ALL USING (auth.role() = 'authenticated');
+    CREATE POLICY "v2_form_config_write_admin"
+      ON public.v2_form_config
+      FOR ALL TO authenticated
+      USING (
+        LOWER((SELECT auth.jwt() ->> 'email')) = ANY (ARRAY[
+          'gabriel.lim@ri.edu.sg',
+          'janissa.soh@ri.edu.sg',
+          'cheekeong.lee@ri.edu.sg',
+          'jialin.ma@ri.edu.sg',
+          'kuangwen.chan@ri.edu.sg'
+        ])
+      )
+      WITH CHECK (
+        LOWER((SELECT auth.jwt() ->> 'email')) = ANY (ARRAY[
+          'gabriel.lim@ri.edu.sg',
+          'janissa.soh@ri.edu.sg',
+          'cheekeong.lee@ri.edu.sg',
+          'jialin.ma@ri.edu.sg',
+          'kuangwen.chan@ri.edu.sg'
+        ])
+      );
   END IF;
 
   IF NOT EXISTS (
@@ -181,9 +199,9 @@ BEGIN
   END IF;
 END $$;
 
-REVOKE ALL ON public.v2_teachers FROM anon, authenticated;
-GRANT SELECT ON public.v2_teachers TO anon, authenticated;
-GRANT INSERT, UPDATE, DELETE ON public.v2_teachers TO authenticated;
+REVOKE ALL ON public.v2_form_config, public.v2_teachers FROM anon, authenticated;
+GRANT SELECT ON public.v2_form_config, public.v2_teachers TO anon, authenticated;
+GRANT INSERT, UPDATE, DELETE ON public.v2_form_config, public.v2_teachers TO authenticated;
 
 -- Teachers must exist before they can request an OTP login:
 -- Supabase Dashboard -> Authentication -> Users -> Invite user.
