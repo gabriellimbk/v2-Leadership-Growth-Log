@@ -35,6 +35,14 @@ function getPracticeScore(section3Answers: Submission['answers']['section3'], pr
   return section3Answers[getPracticeScoreKey(index)] ?? section3Answers[practice] ?? 3;
 }
 
+function Sections1To4Header({ title }: { title: string }) {
+  return (
+    <div className="w-full border-2 border-black bg-amber-400 px-5 py-3">
+      <h2 className="text-[18px] font-black text-black uppercase tracking-wide leading-tight">{title}</h2>
+    </div>
+  );
+}
+
 export default function StudentConsole({ config, teachers }: StudentConsoleProps) {
   const { studentUser, studentLoading } = useAuth();
   const [submission, setSubmission] = useState<Submission | null>(null);
@@ -220,6 +228,10 @@ export default function StudentConsole({ config, teachers }: StudentConsoleProps
       {/* Main Content — full width */}
       <main className="flex-1 p-6 overflow-y-auto bg-slate-100">
         <div className="max-w-5xl mx-auto flex flex-col space-y-4">
+
+          {config.sections1To4TitleEnabled !== false && (
+            <Sections1To4Header title={config.sections1To4Title} />
+          )}
 
           {/* Section 1 */}
           {isSectionEnabled(config.section1) && (
@@ -448,6 +460,10 @@ export default function StudentConsole({ config, teachers }: StudentConsoleProps
               ))}
             </div>
           </div>
+          )}
+
+          {config.afterSection4TitleEnabled !== false && (
+            <Sections1To4Header title={config.afterSection4Title} />
           )}
 
           {/* Section 5 */}

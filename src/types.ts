@@ -1,6 +1,10 @@
 export interface FormConfig {
   id: string;
   title: string;
+  sections1To4Title: string;
+  sections1To4TitleEnabled?: boolean;
+  afterSection4Title: string;
+  afterSection4TitleEnabled?: boolean;
   section1: {
     enabled?: boolean;
     title: string;

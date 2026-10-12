@@ -7,6 +7,10 @@ const FORM_CONFIG_TABLE = 'v2_form_config';
 
 const DEFAULT_CONFIG: FormConfig = {
   id: 'default',
+  sections1To4Title: "PLACEHOLDER TITLE",
+  sections1To4TitleEnabled: true,
+  afterSection4Title: "PLACEHOLDER TITLE",
+  afterSection4TitleEnabled: true,
   title: "PA CCA Student Growth Log – Goal Setting",
   section1: {
     enabled: true,

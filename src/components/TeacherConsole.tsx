@@ -47,6 +47,14 @@ function getPracticeScore(section3Answers: Submission['answers']['section3'], pr
   return section3Answers[getPracticeScoreKey(index)] ?? section3Answers[practice] ?? 3;
 }
 
+function Sections1To4Header({ title }: { title: string }) {
+  return (
+    <div className="w-full border-2 border-black bg-amber-400 px-5 py-3">
+      <h2 className="text-[18px] font-black text-black uppercase tracking-wide leading-tight">{title}</h2>
+    </div>
+  );
+}
+
 type ConfirmAction =
   | { type: 'delete-one'; submission: Submission }
   | { type: 'delete-all'; teacher: string };
@@ -473,6 +481,24 @@ export default function TeacherConsole({ config, onConfigUpdate, teachers, mode 
 
                 <div className="flex-1 overflow-y-auto space-y-8 pr-2">
 
+                  <div className="border-2 border-black bg-amber-400 p-5 flex flex-col sm:flex-row sm:items-center gap-3">
+                    <input
+                      type="text"
+                      value={editableConfig.sections1To4Title}
+                      onChange={e => setEditableConfig(prev => ({ ...prev, sections1To4Title: e.target.value }))}
+                      className="w-full flex-1 border-2 border-black bg-white px-3 py-2 text-[14px] font-black text-black uppercase outline-none focus:ring-2 focus:ring-black/20"
+                    />
+                    <label className="flex items-center gap-2 text-[9px] font-black text-black uppercase tracking-widest shrink-0">
+                      <input
+                        type="checkbox"
+                        checked={editableConfig.sections1To4TitleEnabled !== false}
+                        onChange={e => setEditableConfig(prev => ({ ...prev, sections1To4TitleEnabled: e.target.checked }))}
+                        className="h-3.5 w-3.5 accent-[#004d33]"
+                      />
+                      Show to students
+                    </label>
+                  </div>
+
                   {/* Section 1 */}
                   <div className="bg-white border border-slate-200 rounded-md p-6 shadow-sm space-y-4">
                     <div className="flex items-center justify-between border-b border-slate-100 pb-2">
@@ -709,6 +735,24 @@ export default function TeacherConsole({ config, onConfigUpdate, teachers, mode 
                     </div>
                   </div>
 
+                  <div className="border-2 border-black bg-amber-400 p-5 flex flex-col sm:flex-row sm:items-center gap-3">
+                    <input
+                      type="text"
+                      value={editableConfig.afterSection4Title}
+                      onChange={e => setEditableConfig(prev => ({ ...prev, afterSection4Title: e.target.value }))}
+                      className="w-full flex-1 border-2 border-black bg-white px-3 py-2 text-[14px] font-black text-black uppercase outline-none focus:ring-2 focus:ring-black/20"
+                    />
+                    <label className="flex items-center gap-2 text-[9px] font-black text-black uppercase tracking-widest shrink-0">
+                      <input
+                        type="checkbox"
+                        checked={editableConfig.afterSection4TitleEnabled !== false}
+                        onChange={e => setEditableConfig(prev => ({ ...prev, afterSection4TitleEnabled: e.target.checked }))}
+                        className="h-3.5 w-3.5 accent-[#004d33]"
+                      />
+                      Show to students
+                    </label>
+                  </div>
+
                   {/* Section 5 */}
                   <div className="bg-white border border-slate-200 rounded-md p-6 shadow-sm space-y-4">
                     <div className="flex items-center justify-between border-b border-slate-100 pb-2">
@@ -824,6 +868,10 @@ export default function TeacherConsole({ config, onConfigUpdate, teachers, mode 
 
                 <div className="flex-1 grid grid-cols-12 gap-6 overflow-hidden" id="report-to-pdf">
                   <div className="col-span-12 lg:col-span-8 space-y-4 overflow-y-auto pr-2">
+                    {config.sections1To4TitleEnabled !== false && (
+                      <Sections1To4Header title={config.sections1To4Title} />
+                    )}
+
                     {/* Section 1 */}
                     {isSectionEnabled(config.section1) && (
                     <div className="bg-white border border-slate-200 rounded-md p-5 shadow-sm">
@@ -929,6 +977,10 @@ export default function TeacherConsole({ config, onConfigUpdate, teachers, mode 
                         ))}
                       </div>
                     </div>
+                    )}
+
+                    {config.afterSection4TitleEnabled !== false && (
+                      <Sections1To4Header title={config.afterSection4Title} />
                     )}
 
                     {/* Section 5 */}
@@ -1069,6 +1121,10 @@ export default function TeacherConsole({ config, onConfigUpdate, teachers, mode 
               >
                 <div className="p-6 max-w-5xl mx-auto flex flex-col space-y-4">
 
+                  {config.sections1To4TitleEnabled !== false && (
+                    <Sections1To4Header title={config.sections1To4Title} />
+                  )}
+
                   {/* Section 1 */}
                   {isSectionEnabled(config.section1) && (
                   <div className="bg-white border border-slate-200 rounded-md p-5 shadow-sm">
@@ -1206,6 +1262,10 @@ export default function TeacherConsole({ config, onConfigUpdate, teachers, mode 
                       ))}
                     </div>
                   </div>
+                  )}
+
+                  {config.afterSection4TitleEnabled !== false && (
+                    <Sections1To4Header title={config.afterSection4Title} />
                   )}
 
                   {/* Section 5 */}
