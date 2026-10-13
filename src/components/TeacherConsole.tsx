@@ -776,13 +776,26 @@ export default function TeacherConsole({ config, onConfigUpdate, teachers, mode 
                         className="w-full p-2 bg-slate-50 border border-slate-200 rounded text-[10px] font-bold uppercase"
                       />
                     </div>
-                    <div className="space-y-1">
-                      <label className="text-[8px] font-bold text-slate-400 uppercase">Question shown to students</label>
-                      <textarea
-                        value={editableConfig.section5.question}
-                        onChange={e => updateConfigSection('section5', { question: e.target.value })}
-                        className="w-full p-3 bg-slate-50 border border-slate-200 rounded text-[11px] leading-tight resize-none h-20 focus:bg-white transition-all outline-none"
-                      />
+                    <div className="space-y-4">
+                      {editableConfig.section5.questions.map((question, index) => (
+                        <div key={index} className="flex gap-4 items-start">
+                          <div className="w-8 h-8 rounded bg-emerald-600 text-white flex items-center justify-center text-[10px] font-black shrink-0 shadow-sm">{index + 1}</div>
+                          <div className="flex-grow space-y-1">
+                            <label htmlFor={`section5-question-${index}`} className="text-[8px] font-bold text-slate-400 uppercase">
+                              {index === 0 ? 'Question 1 · 1–5 scale' : `Question ${index + 1} · written response`}
+                            </label>
+                            <textarea id={`section5-question-${index}`} aria-label={`Section 5 question ${index + 1}${index === 0 ? ' (1 to 5 scale)' : ''}`}
+                              value={question}
+                              onChange={e => {
+                                const questions = [...editableConfig.section5.questions];
+                                questions[index] = e.target.value;
+                                updateConfigSection('section5', { questions });
+                              }}
+                              className="w-full p-3 bg-slate-50 border border-slate-200 rounded text-[11px] leading-tight resize-none h-20 focus:bg-white transition-all outline-none"
+                            />
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
 
@@ -809,13 +822,26 @@ export default function TeacherConsole({ config, onConfigUpdate, teachers, mode 
                         className="w-full p-2 bg-slate-50 border border-slate-200 rounded text-[10px] font-bold uppercase"
                       />
                     </div>
-                    <div className="space-y-1">
-                      <label className="text-[8px] font-bold text-slate-400 uppercase">Question shown to students</label>
-                      <textarea
-                        value={editableConfig.section6.question}
-                        onChange={e => updateConfigSection('section6', { question: e.target.value })}
-                        className="w-full p-3 bg-slate-50 border border-slate-200 rounded text-[11px] leading-tight resize-none h-20 focus:bg-white transition-all outline-none"
-                      />
+                    <div className="space-y-4">
+                      {editableConfig.section6.questions.map((question, index) => (
+                        <div key={index} className="flex gap-4 items-start">
+                          <div className="w-8 h-8 rounded bg-cyan-600 text-white flex items-center justify-center text-[10px] font-black shrink-0 shadow-sm">{index + 1}</div>
+                          <div className="flex-grow space-y-1">
+                            <label htmlFor={`section6-question-${index}`} className="text-[8px] font-bold text-slate-400 uppercase">
+                              Question {index + 1} · written response
+                            </label>
+                            <textarea id={`section6-question-${index}`} aria-label={`Section 6 question ${index + 1}`}
+                              value={question}
+                              onChange={e => {
+                                const questions = [...editableConfig.section6.questions];
+                                questions[index] = e.target.value;
+                                updateConfigSection('section6', { questions });
+                              }}
+                              className="w-full p-3 bg-slate-50 border border-slate-200 rounded text-[11px] leading-tight resize-none h-20 focus:bg-white transition-all outline-none"
+                            />
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
 
@@ -987,9 +1013,22 @@ export default function TeacherConsole({ config, onConfigUpdate, teachers, mode 
                     {isSectionEnabled(config.section5) && (
                     <div className="bg-white border border-slate-200 rounded-md p-5 shadow-sm">
                       <h3 className="text-[14px] font-black text-slate-800 border-l-4 border-[#004d33] pl-3 mb-2 uppercase tracking-widest">{config.section5.title}</h3>
-                      <div className="border-b border-slate-100 pb-4 last:border-0">
-                        <p className="text-[11px] font-bold text-slate-400 italic mb-2">{config.section5.question}</p>
-                        <div className="text-[13px] font-medium text-slate-800 leading-relaxed bg-slate-50 p-3 rounded">{selectedSub.answers.section5 || '—'}</div>
+                      <div className="space-y-6">
+                        <div className="border-b border-slate-100 pb-4">
+                          <p className="text-[11px] font-bold text-slate-400 italic mb-3">Q1: {config.section5.questions[0]}</p>
+                          <div className="flex items-center gap-3">
+                            <div className="flex-grow h-2 bg-slate-100 rounded-full overflow-hidden">
+                              <div className="h-full bg-emerald-600" style={{ width: `${(selectedSub.answers.section5.rating / 5) * 100}%` }} />
+                            </div>
+                            <span className="text-[13px] font-black text-emerald-700 w-10 text-right">{selectedSub.answers.section5.rating} / 5</span>
+                          </div>
+                        </div>
+                        {config.section5.questions.slice(1).map((question, index) => (
+                          <div key={index} className="border-b border-slate-100 pb-4 last:border-0">
+                            <p className="text-[11px] font-bold text-slate-400 italic mb-2">Q{index + 2}: {question}</p>
+                            <div className="text-[13px] font-medium text-slate-800 leading-relaxed bg-slate-50 p-3 rounded">{selectedSub.answers.section5.responses[index] || '—'}</div>
+                          </div>
+                        ))}
                       </div>
                     </div>
                     )}
@@ -998,9 +1037,13 @@ export default function TeacherConsole({ config, onConfigUpdate, teachers, mode 
                     {isSectionEnabled(config.section6) && (
                     <div className="bg-white border border-slate-200 rounded-md p-5 shadow-sm">
                       <h3 className="text-[14px] font-black text-slate-800 border-l-4 border-[#004d33] pl-3 mb-2 uppercase tracking-widest">{config.section6.title}</h3>
-                      <div className="border-b border-slate-100 pb-4 last:border-0">
-                        <p className="text-[11px] font-bold text-slate-400 italic mb-2">{config.section6.question}</p>
-                        <div className="text-[13px] font-medium text-slate-800 leading-relaxed bg-slate-50 p-3 rounded">{selectedSub.answers.section6 || '—'}</div>
+                      <div className="space-y-6">
+                        {config.section6.questions.map((question, index) => (
+                          <div key={index} className="border-b border-slate-100 pb-4 last:border-0">
+                            <p className="text-[11px] font-bold text-slate-400 italic mb-2">Q{index + 1}: {question}</p>
+                            <div className="text-[13px] font-medium text-slate-800 leading-relaxed bg-slate-50 p-3 rounded">{selectedSub.answers.section6[index] || '—'}</div>
+                          </div>
+                        ))}
                       </div>
                     </div>
                     )}
@@ -1076,35 +1119,53 @@ export default function TeacherConsole({ config, onConfigUpdate, teachers, mode 
                       </div>
                       )}
 
-                      {/* Section 5 feedback */}
+                      {/* Section 5 per-question feedback */}
                       {isSectionEnabled(config.section5) && (
-                      <div className="space-y-2 pt-2 border-t border-orange-200">
+                      <div className="space-y-4 pt-2 border-t border-orange-200">
                         <div className="pb-1 border-b border-orange-200">
                           <p className="text-sm font-black text-slate-900 uppercase tracking-tight">{config.section5.title}</p>
-                          <p className="text-[9px] text-orange-400 font-bold uppercase tracking-widest mt-0.5">Mentor Feedback</p>
+                          <p className="text-[9px] text-orange-400 font-bold uppercase tracking-widest mt-0.5">Per-Question Feedback</p>
                         </div>
-                        <textarea
-                          value={selectedSub.comments.section5 || ''}
-                          onChange={e => setSelectedSub({ ...selectedSub, comments: { ...selectedSub.comments, section5: e.target.value } })}
-                          className="w-full text-[11px] p-3 bg-white border border-orange-100 rounded italic min-h-[80px] focus:ring-1 focus:ring-orange-500 outline-none"
-                          placeholder="Enter feedback for this section..."
-                        />
+                        {config.section5.questions.map((question, index) => (
+                          <div key={index} className="space-y-1">
+                            <label className="text-[9px] font-black text-slate-600 uppercase">Q{index + 1}: {question.length > 50 ? question.substring(0, 50) + '…' : question}</label>
+                            <textarea
+                              value={selectedSub.comments.section5?.[index] || ''}
+                              onChange={e => {
+                                const comments = [...(selectedSub.comments.section5 || config.section5.questions.map(() => ''))];
+                                comments[index] = e.target.value;
+                                setSelectedSub({ ...selectedSub, comments: { ...selectedSub.comments, section5: comments } });
+                              }}
+                              className="w-full text-[10px] p-2 bg-white border border-orange-100 rounded italic min-h-[50px] focus:ring-1 focus:ring-orange-500 outline-none"
+                              placeholder="Comment..."
+                            />
+                          </div>
+                        ))}
                       </div>
                       )}
 
-                      {/* Section 6 feedback */}
+                      {/* Section 6 per-question feedback */}
                       {isSectionEnabled(config.section6) && (
-                      <div className="space-y-2 pt-2 border-t border-orange-200">
+                      <div className="space-y-4 pt-2 border-t border-orange-200">
                         <div className="pb-1 border-b border-orange-200">
                           <p className="text-sm font-black text-slate-900 uppercase tracking-tight">{config.section6.title}</p>
-                          <p className="text-[9px] text-orange-400 font-bold uppercase tracking-widest mt-0.5">Mentor Feedback</p>
+                          <p className="text-[9px] text-orange-400 font-bold uppercase tracking-widest mt-0.5">Per-Question Feedback</p>
                         </div>
-                        <textarea
-                          value={selectedSub.comments.section6 || ''}
-                          onChange={e => setSelectedSub({ ...selectedSub, comments: { ...selectedSub.comments, section6: e.target.value } })}
-                          className="w-full text-[11px] p-3 bg-white border border-orange-100 rounded italic min-h-[80px] focus:ring-1 focus:ring-orange-500 outline-none"
-                          placeholder="Enter feedback for this section..."
-                        />
+                        {config.section6.questions.map((question, index) => (
+                          <div key={index} className="space-y-1">
+                            <label className="text-[9px] font-black text-slate-600 uppercase">Q{index + 1}: {question.length > 50 ? question.substring(0, 50) + '…' : question}</label>
+                            <textarea
+                              value={selectedSub.comments.section6?.[index] || ''}
+                              onChange={e => {
+                                const comments = [...(selectedSub.comments.section6 || config.section6.questions.map(() => ''))];
+                                comments[index] = e.target.value;
+                                setSelectedSub({ ...selectedSub, comments: { ...selectedSub.comments, section6: comments } });
+                              }}
+                              className="w-full text-[10px] p-2 bg-white border border-orange-100 rounded italic min-h-[50px] focus:ring-1 focus:ring-orange-500 outline-none"
+                              placeholder="Comment..."
+                            />
+                          </div>
+                        ))}
                       </div>
                       )}
 
@@ -1274,12 +1335,24 @@ export default function TeacherConsole({ config, onConfigUpdate, teachers, mode 
                     <h2 className="text-[14px] font-black text-slate-800 border-l-4 border-[#004d33] pl-3 mb-2 uppercase tracking-widest">
                       {config.section5.title}
                     </h2>
-                    <div className="space-y-4">
-                      <label className="text-[11px] font-bold text-slate-600 italic block leading-relaxed pr-8">{config.section5.question}</label>
-                      <textarea disabled
-                        className="w-full text-[12px] border border-slate-200 rounded-md p-4 min-h-[140px] bg-slate-50/50 outline-none leading-relaxed font-medium cursor-default"
-                        placeholder="Type your response here..."
-                      />
+                    <div className="space-y-8">
+                      <div className="flex gap-4">
+                        <div className="w-8 h-8 rounded-full bg-[#1a1a1a] text-white flex items-center justify-center shrink-0 text-[11px] font-black shadow-md border-2 border-white">1</div>
+                        <div className="flex-grow space-y-4 text-left">
+                          <label className="text-[11px] font-bold text-slate-600 italic block leading-relaxed pr-8">{config.section5.questions[0]}</label>
+                          <input type="range" aria-label="Section 5 question 1 rating preview" min="1" max="5" step="1" value="3" disabled className="w-full accent-[#004d33]" />
+                          <div className="flex justify-between text-[9px] font-black uppercase tracking-widest text-slate-400"><span>1</span><span>5</span></div>
+                        </div>
+                      </div>
+                      {config.section5.questions.slice(1).map((question, index) => (
+                        <div key={index} className="flex gap-4">
+                          <div className="w-8 h-8 rounded-full bg-[#1a1a1a] text-white flex items-center justify-center shrink-0 text-[11px] font-black shadow-md border-2 border-white">{index + 2}</div>
+                          <div className="flex-grow space-y-4 text-left">
+                            <label className="text-[11px] font-bold text-slate-600 italic block leading-relaxed pr-8">{question}</label>
+                            <textarea disabled className="w-full text-[12px] border border-slate-200 rounded-md p-4 min-h-[140px] bg-slate-50/50 outline-none leading-relaxed font-medium cursor-default" placeholder="Type your response here..." />
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
                   )}
@@ -1290,12 +1363,16 @@ export default function TeacherConsole({ config, onConfigUpdate, teachers, mode 
                     <h2 className="text-[14px] font-black text-slate-800 border-l-4 border-[#004d33] pl-3 mb-2 uppercase tracking-widest">
                       {config.section6.title}
                     </h2>
-                    <div className="space-y-4">
-                      <label className="text-[11px] font-bold text-slate-600 italic block leading-relaxed pr-8">{config.section6.question}</label>
-                      <textarea disabled
-                        className="w-full text-[12px] border border-slate-200 rounded-md p-4 min-h-[140px] bg-slate-50/50 outline-none leading-relaxed font-medium cursor-default"
-                        placeholder="Type your response here..."
-                      />
+                    <div className="space-y-8">
+                      {config.section6.questions.map((question, index) => (
+                        <div key={index} className="flex gap-4">
+                          <div className="w-8 h-8 rounded-full bg-[#1a1a1a] text-white flex items-center justify-center shrink-0 text-[11px] font-black shadow-md border-2 border-white">{index + 1}</div>
+                          <div className="flex-grow space-y-4 text-left">
+                            <label className="text-[11px] font-bold text-slate-600 italic block leading-relaxed pr-8">{question}</label>
+                            <textarea disabled className="w-full text-[12px] border border-slate-200 rounded-md p-4 min-h-[140px] bg-slate-50/50 outline-none leading-relaxed font-medium cursor-default" placeholder="Type your response here..." />
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
                   )}

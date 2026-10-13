@@ -35,6 +35,14 @@ function getPracticeScore(section3Answers: Submission['answers']['section3'], pr
   return section3Answers[getPracticeScoreKey(index)] ?? section3Answers[practice] ?? 3;
 }
 
+function createEmptySection5Answers(): Submission['answers']['section5'] {
+  return { rating: 3, responses: ['', '', '', '', ''] };
+}
+
+function createEmptySection6Answers(): Submission['answers']['section6'] {
+  return ['', '', '', '', ''];
+}
+
 function Sections1To4Header({ title }: { title: string }) {
   return (
     <div className="w-full border-2 border-black bg-amber-400 px-5 py-3">
@@ -51,8 +59,8 @@ export default function StudentConsole({ config, teachers }: StudentConsoleProps
     section2: {},
     section3: {},
     section4: [],
-    section5: '',
-    section6: ''
+    section5: createEmptySection5Answers(),
+    section6: createEmptySection6Answers()
   });
   const [isSaving, setIsSaving] = useState(false);
   const [dataLoading, setDataLoading] = useState(false);
@@ -132,8 +140,8 @@ export default function StudentConsole({ config, teachers }: StudentConsoleProps
                   section2: {},
                   section3: {},
                   section4: config.section4.questions.map(() => ''),
-                  section5: '',
-                  section6: ''
+                  section5: createEmptySection5Answers(),
+                  section6: createEmptySection6Answers()
                 };
                 const newSub: Submission = {
                   studentUid: studentUser.uid,
@@ -469,28 +477,51 @@ export default function StudentConsole({ config, teachers }: StudentConsoleProps
           {/* Section 5 */}
           {isSectionEnabled(config.section5) && (
           <div className="bg-white border border-slate-200 rounded-md p-5 shadow-sm">
-            <h2 className="text-[12px] font-black text-slate-800 border-l-4 border-[#004d33] pl-3 mb-2 uppercase tracking-widest">
-              {config.section5.title}
-            </h2>
-            <div className="space-y-4">
-              <label className="text-[11px] font-bold text-slate-600 italic block leading-relaxed pr-8">{config.section5.question}</label>
-              <textarea
-                value={answers.section5 || ''}
-                onChange={e => setAnswers({ ...answers, section5: e.target.value })}
-                className="w-full text-[12px] border border-slate-200 rounded-md p-4 min-h-[140px] focus:bg-white bg-slate-50/50 transition-all outline-none leading-relaxed font-medium focus:ring-2 focus:ring-[#004d33]/20"
-                placeholder="Type your response here..."
-              />
-              {submission?.comments?.section5 && (
-                <div className="p-4 bg-amber-50 border border-amber-100 rounded-r-md rounded-bl-md flex gap-3.5 items-start shadow-sm border-l-4 border-l-amber-400">
-                  <div className="p-1.5 bg-white rounded text-amber-500 shrink-0 border border-amber-50 shadow-sm">
-                    <MessageSquare size={12} />
+            <h2 className="text-[12px] font-black text-slate-800 border-l-4 border-[#004d33] pl-3 mb-2 uppercase tracking-widest">{config.section5.title}</h2>
+            <div className="space-y-8">
+              <div className="flex gap-4">
+                <div className="w-8 h-8 rounded-full bg-[#1a1a1a] text-white flex items-center justify-center shrink-0 text-[11px] font-black shadow-md border-2 border-white">1</div>
+                <div className="flex-grow space-y-4 text-left">
+                  <div className="flex items-start justify-between gap-4">
+                    <label className="text-[11px] font-bold text-slate-600 italic leading-relaxed pr-8">{config.section5.questions[0]}</label>
+                    <span className="text-[11px] font-black text-[#004d33] bg-[#004d33]/5 px-2 py-0.5 rounded border border-[#004d33]/10 shrink-0">{answers.section5.rating} / 5</span>
                   </div>
-                  <div>
-                    <div className="text-[8px] font-black text-amber-800 uppercase tracking-widest leading-none mb-1.5 opacity-50">Mentor Insight</div>
-                    <p className="text-[11px] text-amber-900 font-medium italic leading-relaxed">{submission.comments.section5}</p>
+                  <input type="range" aria-label="Section 5 question 1 rating" min="1" max="5" step="1" value={answers.section5.rating}
+                    onChange={e => setAnswers({ ...answers, section5: { ...answers.section5, rating: Number(e.target.value) } })}
+                    className="w-full accent-[#004d33] cursor-pointer" />
+                  <div className="flex justify-between text-[9px] font-black uppercase tracking-widest text-slate-400"><span>1</span><span>5</span></div>
+                  {submission?.comments.section5?.[0] && (
+                    <div className="p-4 bg-amber-50 border border-amber-100 rounded-r-md rounded-bl-md flex gap-3.5 items-start shadow-sm border-l-4 border-l-amber-400">
+                      <div className="p-1.5 bg-white rounded text-amber-500 shrink-0 border border-amber-50 shadow-sm"><MessageSquare size={12} /></div>
+                      <div><div className="text-[8px] font-black text-amber-800 uppercase tracking-widest leading-none mb-1.5 opacity-50">Mentor Insight on Q1</div>
+                        <p className="text-[11px] text-amber-900 font-medium italic leading-relaxed">{submission.comments.section5[0]}</p></div>
+                    </div>
+                  )}
+                </div>
+              </div>
+              {config.section5.questions.slice(1).map((question, index) => (
+                <div key={index} className="flex gap-4">
+                  <div className="w-8 h-8 rounded-full bg-[#1a1a1a] text-white flex items-center justify-center shrink-0 text-[11px] font-black shadow-md border-2 border-white">{index + 2}</div>
+                  <div className="flex-grow space-y-4 text-left">
+                    <label className="text-[11px] font-bold text-slate-600 italic block leading-relaxed pr-8">{question}</label>
+                    <textarea aria-label={`Section 5 answer ${index + 2}`} value={answers.section5.responses[index] || ''}
+                      onChange={e => {
+                        const responses = [...answers.section5.responses];
+                        responses[index] = e.target.value;
+                        setAnswers({ ...answers, section5: { ...answers.section5, responses } });
+                      }}
+                      className="w-full text-[12px] border border-slate-200 rounded-md p-4 min-h-[140px] focus:bg-white bg-slate-50/50 transition-all outline-none leading-relaxed font-medium focus:ring-2 focus:ring-[#004d33]/20"
+                      placeholder="Type your response here..." />
+                    {submission?.comments.section5?.[index + 1] && (
+                      <div className="p-4 bg-amber-50 border border-amber-100 rounded-r-md rounded-bl-md flex gap-3.5 items-start shadow-sm border-l-4 border-l-amber-400">
+                        <div className="p-1.5 bg-white rounded text-amber-500 shrink-0 border border-amber-50 shadow-sm"><MessageSquare size={12} /></div>
+                        <div><div className="text-[8px] font-black text-amber-800 uppercase tracking-widest leading-none mb-1.5 opacity-50">Mentor Insight on Q{index + 2}</div>
+                          <p className="text-[11px] text-amber-900 font-medium italic leading-relaxed">{submission.comments.section5[index + 1]}</p></div>
+                      </div>
+                    )}
                   </div>
                 </div>
-              )}
+              ))}
             </div>
           </div>
           )}
@@ -498,28 +529,31 @@ export default function StudentConsole({ config, teachers }: StudentConsoleProps
           {/* Section 6 */}
           {isSectionEnabled(config.section6) && (
           <div className="bg-white border border-slate-200 rounded-md p-5 shadow-sm">
-            <h2 className="text-[12px] font-black text-slate-800 border-l-4 border-[#004d33] pl-3 mb-2 uppercase tracking-widest">
-              {config.section6.title}
-            </h2>
-            <div className="space-y-4">
-              <label className="text-[11px] font-bold text-slate-600 italic block leading-relaxed pr-8">{config.section6.question}</label>
-              <textarea
-                value={answers.section6 || ''}
-                onChange={e => setAnswers({ ...answers, section6: e.target.value })}
-                className="w-full text-[12px] border border-slate-200 rounded-md p-4 min-h-[140px] focus:bg-white bg-slate-50/50 transition-all outline-none leading-relaxed font-medium focus:ring-2 focus:ring-[#004d33]/20"
-                placeholder="Type your response here..."
-              />
-              {submission?.comments?.section6 && (
-                <div className="p-4 bg-amber-50 border border-amber-100 rounded-r-md rounded-bl-md flex gap-3.5 items-start shadow-sm border-l-4 border-l-amber-400">
-                  <div className="p-1.5 bg-white rounded text-amber-500 shrink-0 border border-amber-50 shadow-sm">
-                    <MessageSquare size={12} />
-                  </div>
-                  <div>
-                    <div className="text-[8px] font-black text-amber-800 uppercase tracking-widest leading-none mb-1.5 opacity-50">Mentor Insight</div>
-                    <p className="text-[11px] text-amber-900 font-medium italic leading-relaxed">{submission.comments.section6}</p>
+            <h2 className="text-[12px] font-black text-slate-800 border-l-4 border-[#004d33] pl-3 mb-2 uppercase tracking-widest">{config.section6.title}</h2>
+            <div className="space-y-8">
+              {config.section6.questions.map((question, index) => (
+                <div key={index} className="flex gap-4">
+                  <div className="w-8 h-8 rounded-full bg-[#1a1a1a] text-white flex items-center justify-center shrink-0 text-[11px] font-black shadow-md border-2 border-white">{index + 1}</div>
+                  <div className="flex-grow space-y-4 text-left">
+                    <label className="text-[11px] font-bold text-slate-600 italic block leading-relaxed pr-8">{question}</label>
+                    <textarea aria-label={`Section 6 answer ${index + 1}`} value={answers.section6[index] || ''}
+                      onChange={e => {
+                        const responses = [...answers.section6];
+                        responses[index] = e.target.value;
+                        setAnswers({ ...answers, section6: responses });
+                      }}
+                      className="w-full text-[12px] border border-slate-200 rounded-md p-4 min-h-[140px] focus:bg-white bg-slate-50/50 transition-all outline-none leading-relaxed font-medium focus:ring-2 focus:ring-[#004d33]/20"
+                      placeholder="Type your response here..." />
+                    {submission?.comments.section6?.[index] && (
+                      <div className="p-4 bg-amber-50 border border-amber-100 rounded-r-md rounded-bl-md flex gap-3.5 items-start shadow-sm border-l-4 border-l-amber-400">
+                        <div className="p-1.5 bg-white rounded text-amber-500 shrink-0 border border-amber-50 shadow-sm"><MessageSquare size={12} /></div>
+                        <div><div className="text-[8px] font-black text-amber-800 uppercase tracking-widest leading-none mb-1.5 opacity-50">Mentor Insight on Q{index + 1}</div>
+                          <p className="text-[11px] text-amber-900 font-medium italic leading-relaxed">{submission.comments.section6[index]}</p></div>
+                      </div>
+                    )}
                   </div>
                 </div>
-              )}
+              ))}
             </div>
           </div>
           )}
